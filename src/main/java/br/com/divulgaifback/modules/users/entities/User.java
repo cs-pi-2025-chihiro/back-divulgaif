@@ -12,6 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -35,14 +36,21 @@ public class User extends BaseEntity {
     @Column(unique = true, length = 20)
     private String cpf;
 
-    @Column(unique = true, length = 20)
+    @Column(unique = true, length = 50)
+    private String rg;
+
+    @Column(unique = true, length = 50)
     private String ra;
+
+    private String password;
 
     @Column(length = MAXIMUM_BIO_VALUE)
     private String bio;
 
-    private String password;
     private String phone;
+
+    @Column(name = "date_of_birth")
+    private LocalDateTime dateOfBirth;
 
     @Column(name = "avatar_url")
     private String avatarUrl;
@@ -60,5 +68,15 @@ public class User extends BaseEntity {
     public boolean hasRole(String roleName) {
         return roles.stream()
                 .anyMatch(role -> role.getName().equals(roleName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name, email, cpf, rg, ra, password, bio, phone, dateOfBirth, avatarUrl, emailConfirmedAt, forgotPasswordToken, roles);
     }
 }
