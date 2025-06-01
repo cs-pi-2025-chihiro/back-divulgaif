@@ -11,12 +11,14 @@ CREATE TABLE users
 (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    cpf VARCHAR(20) NULL,
-    ra VARCHAR(20) NULL,
-    password VARCHAR(255) NOT NULL,
-    bio VARCHAR(500) NULL,
+    email VARCHAR(255) NULL,
+    cpf VARCHAR(20) NOT NULL,
+    rg VARCHAR(100) NULL,
+    ra VARCHAR(50) NULL,
     phone VARCHAR(255) NULL,
+    password VARCHAR(255) NULL,
+    bio VARCHAR(500) NULL,
+    date_of_birth TIMESTAMP NULL,
     avatar_url VARCHAR(255) NULL,
     email_confirmed_at TIMESTAMP NULL,
     forgot_password_token VARCHAR(255) NULL,
@@ -53,3 +55,8 @@ CREATE UNIQUE INDEX index_unique_role_name
 
 CREATE UNIQUE INDEX index_unique_user_role
     ON user_roles (user_id, role_id);
+
+INSERT INTO roles (name) VALUES
+     ('IS_STUDENT'),
+     ('IS_TEACHER' ),
+     ('IS_ADMIN')
