@@ -126,13 +126,13 @@ public class SuapService {
             }
 
             log.error("Failed to fetch user data from SUAP for matricula: {}", matricula);
+            throw new SuapException("Failed to fetch user data from SUAP for matricula: " + matricula);
         } catch (Exception e) {
             if (e instanceof UnauthorizedException || e instanceof BadCredentialsException) {
                 throw new UnauthorizedException();
             }
             throw new SuapException("Failed to fetch user data from SUAP for matricula: " + matricula);
         }
-        return null;
     }
 
     private SuapUserData mapStudentData(JsonNode jsonResponse) {
