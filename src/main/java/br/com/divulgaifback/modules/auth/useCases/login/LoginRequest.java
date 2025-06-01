@@ -1,6 +1,7 @@
 package br.com.divulgaifback.modules.auth.useCases.login;
 
 import br.com.divulgaifback.modules.users.entities.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequest(
@@ -11,11 +12,13 @@ public record LoginRequest(
         String password
 ) {
 
+    @JsonIgnore
     public boolean isSuapLogin() {
         // apenas números
         return identifier != null && identifier.matches("\\d+");
     }
 
+    @JsonIgnore
     public boolean isEmailLogin() {
         return identifier != null && identifier.contains("@");
     }

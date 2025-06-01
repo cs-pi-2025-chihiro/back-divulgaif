@@ -1,12 +1,14 @@
 package br.com.divulgaifback.modules.auth.useCases.login;
 
 import br.com.divulgaifback.modules.users.entities.User;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Component
 public class LoginResponse {
     public String accessToken;

@@ -28,17 +28,4 @@ public class Role extends BaseEntity {
 
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        Role role = (Role) o;
-        return Objects.equals(name, role.name) && Objects.equals(users, role.users);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), name, users);
-    }
 }

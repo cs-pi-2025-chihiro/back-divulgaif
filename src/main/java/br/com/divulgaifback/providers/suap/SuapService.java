@@ -159,7 +159,19 @@ public class SuapService {
         User user = new User();
         user.setRa(userData.getMatricula());
         user.setName(userData.getName());
-        user.setCpf(userData.getCpf());
+        
+        // Format CPF as xxx.xxx.xxx-xx if it's not already in that format
+        String cpf = userData.getCpf();
+        if (cpf != null && !cpf.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
+            // Remove any non-digit characters
+            cpf = cpf.replaceAll("\\D", "");
+            // If it's 11 digits, format it
+            if (cpf.length() == 11) {
+                cpf = cpf.substring(0, 3) + "." + cpf.substring(3, 6) + "." 
+                    + cpf.substring(6, 9) + "-" + cpf.substring(9, 11);
+            }
+        }
+        user.setCpf(cpf);
         user.setEmail(userData.getEmail());
 
         Set<Role> roles = new HashSet<>();
