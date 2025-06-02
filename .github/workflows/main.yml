@@ -1,0 +1,68 @@
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    environment: divulgaif-vps
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Run Tests on Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd ~/divulgaif/back-divulgaif
+          
+          git pull
+          
+          cd ../infra-divulgaif
+          
+          docker compose stop backend-tests divulgaif-secondary || true
+          docker compose rm -f backend-tests divulgaif-secondary || true
+          
+          docker compose up -d divulgaif-secondary
+          echo "Waiting for test database to be ready..."
+          # Fixed: Use correct container and environment variables
+          docker compose exec divulgaif-secondary bash -c 'until pg_isready -U ${DIVULGAIF_DB_TEST_USER} -d ${DIVULGAIF_TEST_DB}; do sleep 1; done'
+          
+          docker compose up --build --exit-code-from backend-tests backend-tests
+          
+          TEST_EXIT_CODE=$?
+          
+          docker compose stop backend-tests divulgaif-secondary
+          docker compose rm -f backend-tests divulgaif-secondary
+          
+          exit $TEST_EXIT_CODE
+
+  deploy:
+    needs: tests
+    runs-on: ubuntu-latest
+    environment: divulgaif-vps
+    
+    steps:
+    - name: Deploy to Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd ~/divulgaif/back-divulgaif
+          
+          git pull
+          
+          cd ../infra-divulgaif
+          docker compose up -d --build backend
