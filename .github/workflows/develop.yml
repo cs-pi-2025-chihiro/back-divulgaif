@@ -1,0 +1,70 @@
+name: Java CI/CD Pipeline - Develop
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    environment: divulgaif-vps
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Run Tests on Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd ~/divulgaif/back-divulgaif
+          
+          git checkout develop
+          git pull origin develop
+          
+          cd ../infra-divulgaif
+          
+          docker compose -f docker-compose.develop.yml stop backend-tests-dev divulgaif-secondary-dev || true
+          docker compose -f docker-compose.develop.yml rm -f backend-tests-dev divulgaif-secondary-dev || true
+          
+          docker compose -f docker-compose.develop.yml up -d divulgaif-secondary-dev
+
+          echo "Waiting for test database to be ready..."
+
+          docker compose -f docker-compose.develop.yml exec divulgaif-secondary-dev bash -c 'until pg_isready -U ${DIVULGAIF_DB_TEST_USER} -d ${DIVULGAIF_TEST_DB}; do sleep 1; done'
+          
+          docker compose -f docker-compose.develop.yml up --build --exit-code-from backend-tests-dev backend-tests-dev
+          
+          TEST_EXIT_CODE=$?
+          
+          docker compose -f docker-compose.develop.yml stop backend-tests-dev divulgaif-secondary-dev
+          docker compose -f docker-compose.develop.yml rm -f backend-tests-dev divulgaif-secondary-dev
+          
+          exit $TEST_EXIT_CODE
+
+  deploy:
+    needs: tests
+    runs-on: ubuntu-latest
+    environment: divulgaif-vps
+    
+    steps:
+    - name: Deploy to Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd ~/divulgaif/back-divulgaif
+          
+          git checkout develop
+          git pull origin develop
+          
+          cd ../infra-divulgaif
+          docker compose -f docker-compose.develop.yml up -d --build backend-dev
