@@ -36,7 +36,7 @@ jobs:
           echo "Waiting for test database to be ready..."
           docker compose exec divulgaif-secondary bash -c 'until pg_isready -U ${DIVULGAIF_DB_TEST_USER} -d ${DIVULGAIF_TEST_DB}; do sleep 1; done'
           
-          docker compose build --no-cache backend-tests
+          docker compose build backend-tests
           docker compose up --build --exit-code-from backend-tests backend-tests
           
           TEST_EXIT_CODE=$?
