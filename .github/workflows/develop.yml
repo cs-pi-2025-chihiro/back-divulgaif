@@ -32,7 +32,7 @@ jobs:
           docker compose -f docker-compose.develop.yml stop backend-tests-dev divulgaif-secondary-dev || true
           docker compose -f docker-compose.develop.yml rm -f backend-tests-dev divulgaif-secondary-dev || true
           
-          docker compose -f docker-compose.develop.yml up -d divulgaif-secondary-dev
+          docker compose -f docker-compose.develop.yml up -d --force-recreate divulgaif-secondary-dev
 
           echo "Waiting for test database to be ready..."
 
