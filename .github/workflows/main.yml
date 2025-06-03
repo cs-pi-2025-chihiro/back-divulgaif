@@ -34,7 +34,6 @@ jobs:
           
           docker compose up -d divulgaif-secondary
           echo "Waiting for test database to be ready..."
-          # Fixed: Use correct container and environment variables
           docker compose exec divulgaif-secondary bash -c 'until pg_isready -U ${DIVULGAIF_DB_TEST_USER} -d ${DIVULGAIF_TEST_DB}; do sleep 1; done'
           
           docker compose up --build --exit-code-from backend-tests backend-tests
