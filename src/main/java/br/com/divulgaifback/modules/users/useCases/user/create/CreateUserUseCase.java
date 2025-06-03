@@ -27,7 +27,7 @@ public class CreateUserUseCase {
     public CreateUserResponse execute(CreateUserRequest request) {
         validateDependencies(request);
         User user = CreateUserRequest.toDomain(request);
-        user.setPassword(passwordEncoder.encode(request.password()));
+        if (Objects.nonNull(request.password())) user.setPassword(passwordEncoder.encode(request.password()));
 
         Role isStudent = roleRepository.findByName(RoleEnum.IS_STUDENT.name())
                 .orElseThrow(() -> NotFoundException

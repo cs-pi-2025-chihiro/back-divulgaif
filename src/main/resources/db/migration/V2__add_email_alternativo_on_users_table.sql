@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN secondary_email VARCHAR(255);
+ALTER TABLE users ADD COLUMN user_type VARCHAR(255);
