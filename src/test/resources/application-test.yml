@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/${DIVULGAIF_TEST_DB}
+    url: jdbc:postgresql://divulgaif-secondary:5432/${DIVULGAIF_TEST_DB}
     username: ${DIVULGAIF_DB_TEST_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -27,3 +27,7 @@ auth:
   jwt:
     token:
       secret: ${DIVULGAIF_JWT_TOKEN}
+
+server:
+  ssl:
+    enabled: false
