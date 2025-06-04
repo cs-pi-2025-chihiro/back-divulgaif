@@ -13,7 +13,7 @@ public record CreateUserRequest(
         @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF must be in the format xxx.xxx.xxx-xx")
         String cpf,
         String bio,
-        @NotBlank(message = "Password is required") String password,
+        String password,
         String phone,
         String avatarUrl,
         String userType
