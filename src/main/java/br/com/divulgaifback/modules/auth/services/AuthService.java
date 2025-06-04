@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,7 +52,7 @@ public class AuthService {
 
             return this.generateTokens(authenticatedUser.getId(), permissions, authenticatedUser.getUser());
         } catch (RuntimeException e) {
-            if (e instanceof UnauthorizedException || e instanceof BadCredentialsException) {
+            if (e instanceof UnauthorizedException || e instanceof BadCredentialsException || e instanceof InternalAuthenticationServiceException) {
                 throw new UnauthorizedException();
             }
             throw new RuntimeException("Error in logging in: " + e.getMessage());
