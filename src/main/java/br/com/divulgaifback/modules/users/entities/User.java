@@ -1,6 +1,5 @@
 package br.com.divulgaifback.modules.users.entities;
 
-
 import br.com.divulgaifback.common.entities.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +11,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -24,32 +22,33 @@ import java.util.Set;
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class User extends BaseEntity {
-
     private static final int MAXIMUM_BIO_VALUE = 500;
 
-    @Column
+    @Column(name = "name")
     private String name;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column
+    @Column(name = "secondary_email")
     private String secondaryEmail;
 
     @Column(unique = true, length = 20)
     private String cpf;
 
-    @Column(unique = true, length = 50)
+    @Column(name = "rg", unique = true, length = 100)
     private String rg;
 
-    @Column(unique = true, length = 50)
+    @Column(name = "ra", unique = true, length = 50)
     private String ra;
 
+    @Column(name = "password")
     private String password;
 
-    @Column(length = MAXIMUM_BIO_VALUE)
+    @Column(name = "bio", length = MAXIMUM_BIO_VALUE)
     private String bio;
 
+    @Column(name = "phone")
     private String phone;
 
     @Column(name = "date_of_birth")
@@ -68,21 +67,15 @@ public class User extends BaseEntity {
     private String userType;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     private Set<Role> roles = new HashSet<>();
 
     public boolean hasRole(String roleName) {
         return roles.stream()
                 .anyMatch(role -> role.getName().equals(roleName));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), name, email, cpf, rg, ra, password, bio, phone, dateOfBirth, avatarUrl, emailConfirmedAt, forgotPasswordToken, roles);
     }
 }
