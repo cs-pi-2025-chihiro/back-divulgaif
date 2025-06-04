@@ -43,19 +43,18 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         try {
-            String identifier = loginRequest.identifier();
-            String password = loginRequest.password();
+            var token = new UsernamePasswordAuthenticationToken(loginRequest.identifier(), loginRequest.password());
+            var authentication = this.authenticationManager.authenticate(token);
 
-            if (suapService.comesFromSuap(identifier)) {
-                return handleSuapLogin(identifier, password);
-            } else {
-                return handleRegularLogin(loginRequest);
-            }
+            AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
+            List<String> permissions = authenticatedUser.getRoles();
+
+            return this.generateTokens(authenticatedUser.getId(), permissions, authenticatedUser.getUser());
         } catch (RuntimeException e) {
             if (e instanceof UnauthorizedException || e instanceof BadCredentialsException) {
                 throw new UnauthorizedException();
             }
-            throw new RuntimeException("Error in logging in");
+            throw new RuntimeException("Error in logging in: " + e.getMessage());
         }
     }
 
@@ -79,44 +78,6 @@ public class AuthService {
         var accessToken = this.jwtService.generateToken(user.getId(), roles, accessTokenExpirationTime, "access");
 
         return refreshTokenResponse.toPresentation(accessToken);
-    }
-
-    @Transactional
-    public LoginResponse handleSuapLogin(String matricula, String password) {
-        try {
-            SuapService.SuapTokenResponse suapTokens = suapService.authenticateWithSuap(matricula, password);
-
-            User user = suapService.createOrUpdateSuapUser(matricula, suapTokens.accessToken());
-
-            List<String> roles = user.getRoles().stream()
-                    .map(Role::getName)
-                    .toList();
-
-            // Vou apenas gerar os tokens do divulgaif já que o SUAP tem o mesmo tempo de expiração
-            // para access tokens e refresh tokens o que é meio nada a ver
-            return generateTokens(user.getId(), roles, user);
-
-        } catch (UnauthorizedException e) {
-            log.warn("SUAP authentication failed for matricula: {}", matricula);
-            throw new UnauthorizedException();
-        } catch (Exception e) {
-            log.error("SUAP authentication error for matricula: {}", matricula, e);
-            throw new RuntimeException("SUAP authentication service unavailable");
-        }
-    }
-
-    private LoginResponse handleRegularLogin(LoginRequest loginRequest) {
-        try {
-            var token = new UsernamePasswordAuthenticationToken(loginRequest.identifier(), loginRequest.password());
-            var authentication = this.authenticationManager.authenticate(token);
-
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) authentication.getPrincipal();
-            List<String> permissions = authenticatedUser.getRoles();
-
-            return this.generateTokens(authenticatedUser.getId(), permissions, authenticatedUser.getUser());
-        } catch (RuntimeException e) {
-            throw new UnauthorizedException();
-        }
     }
 
     public LoginResponse generateTokens(Integer userId, List<String> permissions, User user) {

@@ -27,10 +27,13 @@ public class User extends BaseEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "email", unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "cpf", unique = true, length = 20)
+    @Column(name = "secondary_email")
+    private String secondaryEmail;
+
+    @Column(unique = true, length = 20)
     private String cpf;
 
     @Column(name = "rg", unique = true, length = 100)
@@ -59,6 +62,9 @@ public class User extends BaseEntity {
 
     @Column(name = "forgot_password_token")
     private String forgotPasswordToken;
+
+    @Column(name = "user_type")
+    private String userType;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
