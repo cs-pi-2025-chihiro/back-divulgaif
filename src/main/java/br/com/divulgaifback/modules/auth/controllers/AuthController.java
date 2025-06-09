@@ -3,6 +3,7 @@ package br.com.divulgaifback.modules.auth.controllers;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
+import br.com.divulgaifback.modules.auth.useCases.oauthLogin.OauthLoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.refresh.RefreshRequest;
 import br.com.divulgaifback.modules.auth.useCases.refresh.RefreshResponse;
 import jakarta.validation.Valid;
@@ -26,5 +27,11 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public RefreshResponse refresh(@Valid @RequestBody RefreshRequest refreshTokenRequest) {
         return authService.refresh(refreshTokenRequest);
+    }
+
+    @PostMapping("/oauth-login")
+    @ResponseStatus(HttpStatus.OK)
+    public LoginResponse oauthLogin(@Valid @RequestBody OauthLoginRequest oauthLoginRequest) {
+        return authService.oauthLogin(oauthLoginRequest);
     }
 }
