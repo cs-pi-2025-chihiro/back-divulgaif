@@ -46,7 +46,7 @@ public class CreateWorkUseCase {
     }
 
     private void addStatus(Work work, String workStatus) {
-        String statusName = StringUtils.isNullOrEmpty(workStatus) ? Constants.draftStatus : workStatus;
+        String statusName = StringUtils.isNullOrEmpty(workStatus) ? Constants.DRAFT_STATUS : workStatus;
         WorkStatus status = workStatusRepository.findByName(statusName).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", statusName));
         work.setWorkStatus(status);
     }
@@ -106,7 +106,7 @@ public class CreateWorkUseCase {
         Author author = new Author();
         author.setName(student.getName());
         author.setEmail(student.getEmail());
-        author.setType(Constants.registeredAuthor);
+        author.setType(Constants.REGISTERED_AUTHOR);
         author.setUser(student);
         authorRepository.save(author);
         return author;

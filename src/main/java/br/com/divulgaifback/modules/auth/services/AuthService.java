@@ -1,9 +1,11 @@
 package br.com.divulgaifback.modules.auth.services;
 
 import br.com.divulgaifback.common.exceptions.custom.UnauthorizedException;
+import br.com.divulgaifback.common.utils.Constants;
 import br.com.divulgaifback.modules.auth.entities.AuthenticatedUser;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
+import br.com.divulgaifback.modules.auth.useCases.oauthLogin.OauthLoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.refresh.RefreshRequest;
 import br.com.divulgaifback.modules.auth.useCases.refresh.RefreshResponse;
 import br.com.divulgaifback.modules.users.entities.Role;
@@ -11,6 +13,7 @@ import br.com.divulgaifback.modules.users.entities.User;
 import br.com.divulgaifback.modules.users.repositories.UserRepository;
 import br.com.divulgaifback.providers.suap.SuapService;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +24,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -32,6 +35,7 @@ public class AuthService {
     private final LoginResponse loginUserResponse;
     private final JwtService jwtService;
     private final SuapService suapService;
+    private final ObjectMapper objectMapper;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RefreshResponse refreshTokenResponse;
@@ -56,6 +60,29 @@ public class AuthService {
                 throw new UnauthorizedException();
             }
             throw new RuntimeException("Error in logging in: " + e.getMessage());
+        }
+    }
+
+    public LoginResponse oauthLogin(OauthLoginRequest request) {
+        try {
+            User user = null;
+
+            if (Objects.equals(request.provider(), Constants.SUAP_PROVIDER)) {
+                user = suapService.suapOauthLogin(request);
+            }
+
+            if (Objects.isNull(user)) throw new UnauthorizedException();
+
+            List<String> permissions = user.getRoles().stream()
+                    .map(Role::getName)
+                    .toList();
+
+            return generateTokens(user.getId(), permissions, user);
+        } catch (Exception e) {
+            if (e instanceof UnauthorizedException || e instanceof BadCredentialsException || e instanceof InternalAuthenticationServiceException) {
+                throw new UnauthorizedException();
+            }
+            throw new RuntimeException("Error in suap login: " + e.getMessage());
         }
     }
 
