@@ -27,4 +27,7 @@ public class ValidateNull {
         return value != null ? mapper.apply(value) : null;
     }
 
+    public static <T> T validate(T value) {
+        return value;
+    }
 }
