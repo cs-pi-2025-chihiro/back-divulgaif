@@ -11,6 +11,7 @@ public record CreateWorkRequest(
         String content,
         String principalLink,
         String metaTag,
+        String imageUrl,
         Integer teacherId,
         List<Integer> studentIds,
         List<AuthorRequest> newAuthors,
@@ -42,6 +43,7 @@ public record CreateWorkRequest(
         work.setContent(request.content);
         work.setPrincipalLink(request.principalLink);
         work.setMetaTag(request.metaTag);
+        work.setImageUrl(request.imageUrl);
         return work;
     }
 }

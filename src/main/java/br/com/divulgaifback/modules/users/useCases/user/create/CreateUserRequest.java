@@ -18,18 +18,18 @@ public record CreateUserRequest(
         String avatarUrl,
         String userType
 ) {
-    public static User toDomain(CreateUserRequest input) {
+    public static User toDomain(CreateUserRequest request) {
         final var user = new User();
-        user.setName(input.name);
-        user.setEmail(input.email);
-        user.setSecondaryEmail(input.secondaryEmail);
-        user.setRa(input.ra);
-        user.setCpf(input.cpf);
-        user.setBio(input.bio);
-        user.setPassword(input.password);
-        user.setPhone(input.phone);
-        user.setAvatarUrl(input.avatarUrl);
-        user.setUserType(input.userType);
+        user.setName(request.name);
+        user.setEmail(request.email);
+        user.setSecondaryEmail(request.secondaryEmail);
+        user.setRa(request.ra);
+        user.setCpf(request.cpf);
+        user.setBio(request.bio);
+        user.setPassword(request.password);
+        user.setPhone(request.phone);
+        user.setAvatarUrl(request.avatarUrl);
+        user.setUserType(request.userType);
 
         return user;
     }

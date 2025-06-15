@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -98,6 +99,20 @@ public class GlobalExceptionHandler {
                 .build();
 
         log.error("HttpMessageNotReadableException: {} - Path: {}", exception.getError(), exception.getPath());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    protected ResponseEntity<CustomException> invalidParams(HttpMessageNotReadableException e, HttpServletRequest request) {
+        var exception = CustomException.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .timestamp(Instant.now())
+                .error("Invalid parameters in request")
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("DateTimeParseException: {} - Path: {}", exception.getError(), exception.getPath());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
     }
