@@ -5,7 +5,13 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src/ ./src/
 COPY keystore.p12 /app/keystore.p12
-RUN mvn clean package -DskipTests
+
+RUN find . -name "Q*.java" -type f || true
+
+RUN mvn clean
+RUN mvn generate-sources
+RUN mvn compile
+RUN mvn package -DskipTests -Dmaven.compile.skip=true
 
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
