@@ -16,10 +16,6 @@ public class CreateWorkResponse {
     public String content;
     public String principalLink;
     public String metaTag;
-    public LocalDateTime submittedAt;
-    public LocalDateTime approvedAt;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
     public WorkStatusResponse workStatus;
     public WorkTypeResponse workType;
     public UserResponse teacher;
@@ -33,13 +29,11 @@ public class CreateWorkResponse {
     public static class WorkStatusResponse {
         public Integer id;
         public String name;
-        public String description;
     }
 
     public static class WorkTypeResponse {
         public Integer id;
         public String name;
-        public String description;
     }
 
     public static class AuthorResponse {

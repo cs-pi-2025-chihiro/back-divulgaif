@@ -88,6 +88,7 @@ public class CreateWorkUseCase {
 
             author.setName(name.trim());
             author.setEmail(email.trim());
+            author.setType(Constants.UNREGISTERED_AUTHOR);
 
             authorRepository.save(author);
             work.addAuthor(author);

@@ -58,6 +58,9 @@ public class Work extends BaseEntity {
     @JoinColumn(name = "teacher_id")
     private User teacher;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "work_authors",

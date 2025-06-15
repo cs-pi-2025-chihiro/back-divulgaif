@@ -3,9 +3,11 @@ package br.com.divulgaifback.modules.users.useCases.user.create;
 import br.com.divulgaifback.common.exceptions.custom.DuplicateException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.utils.Constants;
+import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.Role;
 import br.com.divulgaifback.modules.users.entities.User;
 import br.com.divulgaifback.modules.users.entities.enums.RoleEnum;
+import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.users.repositories.RoleRepository;
 import br.com.divulgaifback.modules.users.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -14,35 +16,30 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CreateUserUseCase {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final CreateUserResponse createUserResponse;
+    private final AuthorRepository authorRepository;
 
     @Transactional
     public CreateUserResponse execute(CreateUserRequest request) {
         validateDependencies(request);
+
         User user = CreateUserRequest.toDomain(request);
         if (Objects.nonNull(request.password())) user.setPassword(passwordEncoder.encode(request.password()));
-        if (Objects.equals(request.userType(), Constants.STUDENT_SUAP_TYPE)) {
-            Role isStudent = roleRepository.findByName(RoleEnum.IS_STUDENT.name())
-                    .orElseThrow(() -> NotFoundException
-                            .with(Role.class, "name", RoleEnum.IS_STUDENT.name()));
-            user.getRoles().add(isStudent);
-        } else if (Objects.equals(request.userType(), Constants.TEACHER_SUAP_TYPE)) {
-            Role isTeacher = roleRepository.findByName(RoleEnum.IS_TEACHER.name())
-                    .orElseThrow(() -> NotFoundException
-                            .with(Role.class, "name", RoleEnum.IS_TEACHER.name()));
-            user.getRoles().add(isTeacher);
-        }
-        userRepository.save(user);
 
-        return createUserResponse.toPresentation(user);
+        determineUserRole(request, user);
+
+        User savedUser = userRepository.save(user);
+        determineAuthorship(request, savedUser);
+
+        return createUserResponse.toPresentation(savedUser);
     }
 
     private void validateDependencies(CreateUserRequest request) {
@@ -71,5 +68,25 @@ public class CreateUserUseCase {
                 throw DuplicateException.with(User.class, "ra", ra);
             }
         }
+    }
+
+    private void determineUserRole(CreateUserRequest request, User user) {
+        if (Objects.equals(request.userType(), Constants.STUDENT_SUAP_TYPE)) {
+            Role isStudent = roleRepository.findByName(RoleEnum.IS_STUDENT.name()).orElseThrow(() -> NotFoundException.with(Role.class, "name", RoleEnum.IS_STUDENT.name()));
+            user.getRoles().add(isStudent);
+        } else if (Objects.equals(request.userType(), Constants.TEACHER_SUAP_TYPE)) {
+            Role isTeacher = roleRepository.findByName(RoleEnum.IS_TEACHER.name()).orElseThrow(() -> NotFoundException.with(Role.class, "name", RoleEnum.IS_TEACHER.name()));
+            user.getRoles().add(isTeacher);
+        }
+    }
+
+    private void determineAuthorship(CreateUserRequest request, User user) {
+        Optional<Author> author = authorRepository.findByEmail(request.email())
+                .or(() -> Optional.ofNullable(request.secondaryEmail())
+                        .flatMap(authorRepository::findByEmail));
+
+        if (author.isEmpty()) return;
+
+        authorRepository.updateAuthorsUserId(author.get().getId(), user.getId());
     }
 }

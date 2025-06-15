@@ -17,7 +17,8 @@ public class WhiteListConfig {
         List<RequestMatcher> matchers = Arrays.asList(
                 new AntPathRequestMatcher("/error", "GET"),
                 new AntPathRequestMatcher("/auth/**", "POST"),
-                new AntPathRequestMatcher("/users", "POST")
+                new AntPathRequestMatcher("/users", "POST"),
+                new AntPathRequestMatcher("/works/list", "GET")
         );
         return new OrRequestMatcher(matchers);
     }
