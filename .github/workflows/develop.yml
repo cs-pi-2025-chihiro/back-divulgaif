@@ -26,3 +26,4 @@ jobs:
           
           cd ../infra-divulgaif
           docker compose -f docker-compose.develop.yml up -d --build backend-dev
+          
