@@ -1,7 +1,7 @@
 package br.com.divulgaifback.modules.auth.services;
 
+import br.com.divulgaifback.common.constants.SuapProviderConstants;
 import br.com.divulgaifback.common.exceptions.custom.UnauthorizedException;
-import br.com.divulgaifback.common.utils.Constants;
 import br.com.divulgaifback.modules.auth.entities.AuthenticatedUser;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
@@ -67,7 +67,7 @@ public class AuthService {
         try {
             User user = null;
 
-            if (Objects.equals(request.provider(), Constants.SUAP_PROVIDER)) {
+            if (Objects.equals(request.provider(), SuapProviderConstants.SUAP_PROVIDER)) {
                 user = suapService.suapOauthLogin(request);
             }
 

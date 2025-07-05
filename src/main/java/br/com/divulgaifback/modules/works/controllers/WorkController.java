@@ -6,10 +6,13 @@ import br.com.divulgaifback.modules.works.entities.Work;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkRequest;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkUseCase;
+import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkResponse;
+import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksResponse;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksUseCase;
 import com.querydsl.core.BooleanBuilder;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -27,6 +30,7 @@ import java.util.Map;
 public class WorkController extends BaseController {
     private final CreateWorkUseCase createWorkUseCase;
     private final ListWorksUseCase listWorksUseCase;
+    private final GetWorkUseCase getWorkUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -42,5 +46,11 @@ public class WorkController extends BaseController {
             Pageable pagination) {
         BooleanBuilder operatorPredicate = buildOperatorPredicate(params, QWork.work);
         return listWorksUseCase.execute(operatorPredicate, basePredicate, pagination);
+    }
+
+    @GetMapping("/{workId}")
+    @ResponseStatus(HttpStatus.OK)
+    public GetWorkResponse get(@Valid @Positive @PathVariable Integer workId) {
+        return getWorkUseCase.execute(workId);
     }
 }
