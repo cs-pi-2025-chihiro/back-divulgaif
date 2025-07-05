@@ -59,11 +59,18 @@ public class CreateWorkUseCase {
 
     private void handleAuthors(Work work, CreateWorkRequest request) {
         addMainAuthor(work);
+
         if (hasStudents(request)) {
             handleDivulgaIfStudents(work, request.studentIds());
-        } else {
+        }
+
+        if (hasNewAuthors(request)) {
             handleNonDivulgaIfUsers(work, request.newAuthors());
         }
+    }
+
+    private boolean hasNewAuthors(CreateWorkRequest request) {
+        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
     }
 
     private void addMainAuthor(Work work) {

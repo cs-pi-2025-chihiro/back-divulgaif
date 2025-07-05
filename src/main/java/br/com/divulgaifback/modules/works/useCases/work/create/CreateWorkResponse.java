@@ -1,13 +1,14 @@
 package br.com.divulgaifback.modules.works.useCases.work.create;
 
 import br.com.divulgaifback.modules.works.entities.Work;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Component
 public class CreateWorkResponse {
     public Integer id;
