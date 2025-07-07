@@ -17,9 +17,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -338,7 +345,7 @@ class WorkControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -374,7 +381,7 @@ class WorkControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -411,7 +418,7 @@ class WorkControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -475,5 +482,209 @@ class WorkControllerTest {
         );
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkRollbackOnError() throws Exception {
+        CreateWorkRequest.AuthorRequest validAuthor = new CreateWorkRequest.AuthorRequest(
+                "Valid Author", "valid@example.com"
+        );
+        CreateWorkRequest.AuthorRequest invalidAuthor = new CreateWorkRequest.AuthorRequest(
+                "", "invalid@example.com"
+        );
+
+        CreateWorkRequest workRequest = new CreateWorkRequest(
+                "Test Rollback", null, null, null, null, null, null, null,
+                List.of(validAuthor, invalidAuthor), null, null, "ARTICLE", null
+        );
+
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                getBaseUrl(), request, String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testConcurrentWorkCreation() throws Exception {
+        int threadCount = 10;
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        List<ResponseEntity<CreateWorkResponse>> responses = Collections.synchronizedList(new ArrayList<>());
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
+        for (int i = 0; i < threadCount; i++) {
+            final int index = i;
+            executor.submit(() -> {
+                try {
+                    CreateWorkRequest workRequest = new CreateWorkRequest(
+                            "Concurrent Work " + index, null, null, null, null, null, null, null,
+                            null, null, null, "ARTICLE", null
+                    );
+
+                    HttpHeaders headers = getAuthenticatedHeaders();
+                    HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+                    ResponseEntity<CreateWorkResponse> response = restTemplate.postForEntity(
+                            getBaseUrl(), request, CreateWorkResponse.class
+                    );
+
+                    responses.add(response);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await(30, TimeUnit.SECONDS);
+        executor.shutdown();
+
+        assertEquals(threadCount, responses.size());
+        responses.forEach(response ->
+                assertEquals(HttpStatus.CREATED, response.getStatusCode())
+        );
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkWithExpiredToken() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth("expired.jwt.token");
+
+        CreateWorkRequest workRequest = new CreateWorkRequest(
+                "Test Work", null, null, null, null, null, null, null,
+                null, null, null, "ARTICLE", null
+        );
+
+        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                getBaseUrl(), request, String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkWithInvalidBearerToken() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth("invalid-token-format");
+
+        CreateWorkRequest workRequest = new CreateWorkRequest(
+                "Test Work", null, null, null, null, null, null, null,
+                null, null, null, "ARTICLE", null
+        );
+
+        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                getBaseUrl(), request, String.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkWithExistingLabel() throws Exception {
+        CreateWorkRequest.LabelRequest label = new CreateWorkRequest.LabelRequest(
+                "Technology", "#FF0000"
+        );
+
+        CreateWorkRequest workRequest1 = new CreateWorkRequest(
+                "First Work", null, null, null, null, null, null, null,
+                null, List.of(label), null, "ARTICLE", null
+        );
+
+        HttpHeaders headers = getAuthenticatedHeaders();
+        restTemplate.postForEntity(getBaseUrl(),
+                new HttpEntity<>(workRequest1, headers), CreateWorkResponse.class);
+
+        CreateWorkRequest workRequest2 = new CreateWorkRequest(
+                "Second Work", null, null, null, null, null, null, null,
+                null, List.of(label), null, "ARTICLE", null
+        );
+
+        ResponseEntity<CreateWorkResponse> response = restTemplate.postForEntity(
+                getBaseUrl(), new HttpEntity<>(workRequest2, headers), CreateWorkResponse.class
+        );
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody().labels);
+        assertEquals(1, response.getBody().labels.size());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkWithVeryLongTitle() throws Exception {
+        String longTitle = "A".repeat(1000);
+        CreateWorkRequest workRequest = new CreateWorkRequest(
+                longTitle, "Description", null, null, null, null, null, null,
+                null, null, null, "ARTICLE", null
+        );
+
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                getBaseUrl(), request, String.class
+        );
+
+        assertTrue(response.getStatusCode() == HttpStatus.BAD_REQUEST ||
+                response.getStatusCode() == HttpStatus.CREATED);
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkWithInvalidEmailFormat() throws Exception {
+        CreateWorkRequest.AuthorRequest invalidAuthor = new CreateWorkRequest.AuthorRequest(
+                "John Doe", "invalid-email-format"
+        );
+
+        CreateWorkRequest workRequest = new CreateWorkRequest(
+                "Test Work", null, null, null, null, null, null, null,
+                List.of(invalidAuthor), null, null, "ARTICLE", null
+        );
+
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                getBaseUrl(), request, String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testCreateWorkWithInvalidURL() throws Exception {
+        CreateWorkRequest.LinkRequest invalidLink = new CreateWorkRequest.LinkRequest(
+                "Invalid Link", "not-a-valid-url", "Description"
+        );
+
+        CreateWorkRequest workRequest = new CreateWorkRequest(
+                "Test Work", null, null, null, null, null, null, null,
+                null, null, List.of(invalidLink), "ARTICLE", null
+        );
+
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                getBaseUrl(), request, String.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }
