@@ -1,28 +1,32 @@
 package br.com.divulgaifback.modules.works.useCases.work.create;
 
 import br.com.divulgaifback.modules.works.entities.Work;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.URL;
 
 import java.util.List;
 
 public record CreateWorkRequest(
-        @NotBlank(message = "title is required") String title,
+        @NotBlank(message = "title is required") @Size(max = 255) String title,
         String description,
         String content,
         String principalLink,
         String metaTag,
         String imageUrl,
         Integer teacherId,
-        List<Integer> studentIds,
-        List<AuthorRequest> newAuthors,
-        List<LabelRequest> workLabels,
-        List<LinkRequest> workLinks,
+        @Valid List<Integer> studentIds,
+        @Valid List<AuthorRequest> newAuthors,
+        @Valid List<LabelRequest> workLabels,
+        @Valid List<LinkRequest> workLinks,
         @NotBlank(message = "workType is required") String workType,
         String workStatus
 ) {
     public record AuthorRequest(
             @NotBlank(message = "name is required") String name,
-            @NotBlank(message = "email is required") String email
+            @NotBlank(message = "email is required") @Email String email
     ) {}
 
     public record LabelRequest(
@@ -32,7 +36,7 @@ public record CreateWorkRequest(
 
     public record LinkRequest(
             @NotBlank(message = "name is required") String name,
-            @NotBlank(message = "url is required") String url,
+            @NotBlank(message = "url is required") @URL String url,
             String description
     ) {}
 

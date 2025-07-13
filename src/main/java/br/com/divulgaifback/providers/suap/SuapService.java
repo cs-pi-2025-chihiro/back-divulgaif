@@ -1,7 +1,7 @@
 package br.com.divulgaifback.providers.suap;
 
+import br.com.divulgaifback.common.constants.SuapConstants;
 import br.com.divulgaifback.common.exceptions.custom.UnauthorizedException;
-import br.com.divulgaifback.common.utils.Constants;
 import br.com.divulgaifback.modules.auth.useCases.oauthLogin.OauthLoginRequest.*;
 import br.com.divulgaifback.modules.auth.useCases.oauthLogin.OauthLoginRequest;
 import br.com.divulgaifback.modules.users.entities.User;
@@ -41,8 +41,8 @@ public class SuapService {
             throw new UnauthorizedException();
         }
 
-        if (!(Objects.equals(data.tipoUsuario(), Constants.STUDENT_SUAP_TYPE)
-                || Objects.equals(data.tipoUsuario(), Constants.TEACHER_SUAP_TYPE))) {
+        if (!(Objects.equals(data.tipoUsuario(), SuapConstants.STUDENT_SUAP_TYPE)
+                || Objects.equals(data.tipoUsuario(), SuapConstants.TEACHER_SUAP_TYPE))) {
             throw new UnauthorizedException();
         }
     }

@@ -1,8 +1,8 @@
 package br.com.divulgaifback.modules.users.useCases.user.create;
 
+import br.com.divulgaifback.common.constants.SuapConstants;
 import br.com.divulgaifback.common.exceptions.custom.DuplicateException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
-import br.com.divulgaifback.common.utils.Constants;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.Role;
 import br.com.divulgaifback.modules.users.entities.User;
@@ -71,10 +71,10 @@ public class CreateUserUseCase {
     }
 
     private void determineUserRole(CreateUserRequest request, User user) {
-        if (Objects.equals(request.userType(), Constants.STUDENT_SUAP_TYPE)) {
+        if (Objects.equals(request.userType(), SuapConstants.STUDENT_SUAP_TYPE)) {
             Role isStudent = roleRepository.findByName(RoleEnum.IS_STUDENT.name()).orElseThrow(() -> NotFoundException.with(Role.class, "name", RoleEnum.IS_STUDENT.name()));
             user.getRoles().add(isStudent);
-        } else if (Objects.equals(request.userType(), Constants.TEACHER_SUAP_TYPE)) {
+        } else if (Objects.equals(request.userType(), SuapConstants.TEACHER_SUAP_TYPE)) {
             Role isTeacher = roleRepository.findByName(RoleEnum.IS_TEACHER.name()).orElseThrow(() -> NotFoundException.with(Role.class, "name", RoleEnum.IS_TEACHER.name()));
             user.getRoles().add(isTeacher);
         }

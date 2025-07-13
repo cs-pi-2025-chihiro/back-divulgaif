@@ -1,8 +1,9 @@
 package br.com.divulgaifback.modules.works.useCases.work.create;
 
+import br.com.divulgaifback.common.constants.AuthorConstants;
+import br.com.divulgaifback.common.constants.WorkConstants;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.exceptions.custom.ValidationException;
-import br.com.divulgaifback.common.utils.Constants;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.User;
@@ -46,7 +47,7 @@ public class CreateWorkUseCase {
     }
 
     private void addStatus(Work work, String workStatus) {
-        String statusName = StringUtils.isNullOrEmpty(workStatus) ? Constants.DRAFT_STATUS : workStatus;
+        String statusName = StringUtils.isNullOrEmpty(workStatus) ? WorkConstants.DRAFT_STATUS : workStatus;
         WorkStatus status = workStatusRepository.findByName(statusName).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", statusName));
         work.setWorkStatus(status);
     }
@@ -58,11 +59,18 @@ public class CreateWorkUseCase {
 
     private void handleAuthors(Work work, CreateWorkRequest request) {
         addMainAuthor(work);
+
         if (hasStudents(request)) {
             handleDivulgaIfStudents(work, request.studentIds());
-        } else {
+        }
+
+        if (hasNewAuthors(request)) {
             handleNonDivulgaIfUsers(work, request.newAuthors());
         }
+    }
+
+    private boolean hasNewAuthors(CreateWorkRequest request) {
+        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
     }
 
     private void addMainAuthor(Work work) {
@@ -88,7 +96,7 @@ public class CreateWorkUseCase {
 
             author.setName(name.trim());
             author.setEmail(email.trim());
-            author.setType(Constants.UNREGISTERED_AUTHOR);
+            author.setType(AuthorConstants.UNREGISTERED_AUTHOR);
 
             authorRepository.save(author);
             work.addAuthor(author);
@@ -107,7 +115,7 @@ public class CreateWorkUseCase {
         Author author = new Author();
         author.setName(student.getName());
         author.setEmail(student.getEmail());
-        author.setType(Constants.REGISTERED_AUTHOR);
+        author.setType(AuthorConstants.REGISTERED_AUTHOR);
         author.setUser(student);
         authorRepository.save(author);
         return author;
