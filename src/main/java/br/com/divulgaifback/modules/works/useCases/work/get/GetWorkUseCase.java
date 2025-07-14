@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class GetWorkUseCase {
-    private WorkRepository workRepository;
-    private GetWorkResponse getWorkResponse;
+    private final WorkRepository workRepository;
+    private final GetWorkResponse getWorkResponse;
 
     @Transactional(readOnly = true)
     public GetWorkResponse execute(Integer workId) {
