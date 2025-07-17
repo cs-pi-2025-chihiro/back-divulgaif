@@ -3,14 +3,12 @@ package br.com.divulgaifback.modules.works.controllers;
 import br.com.divulgaifback.common.controllers.BaseController;
 import br.com.divulgaifback.modules.works.entities.Label;
 import br.com.divulgaifback.modules.works.entities.QLabel;
-import br.com.divulgaifback.modules.works.entities.QWork;
-import br.com.divulgaifback.modules.works.entities.Work;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelRequest;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelResponse;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelUseCase;
 import br.com.divulgaifback.modules.works.useCases.label.list.ListLabelsResponse;
 import br.com.divulgaifback.modules.works.useCases.label.list.ListLabelsUseCase;
-import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksUseCase;
+import jakarta.validation.Valid;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +24,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/labels")
 public class LabelController extends BaseController {
-    private ListLabelsUseCase listLabelsUseCase;
-    private CreateLabelUseCase createLabelUseCase;
+    private final ListLabelsUseCase listLabelsUseCase;
+    private final CreateLabelUseCase createLabelUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateLabelResponse create(CreateLabelRequest request) {
+    public CreateLabelResponse create(@Valid @RequestBody CreateLabelRequest request) {
         return createLabelUseCase.execute(request);
     }
 

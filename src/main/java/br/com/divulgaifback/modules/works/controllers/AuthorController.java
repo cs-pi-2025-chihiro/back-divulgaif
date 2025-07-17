@@ -3,13 +3,14 @@ package br.com.divulgaifback.modules.works.controllers;
 import br.com.divulgaifback.common.controllers.BaseController;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.QAuthor;
-import br.com.divulgaifback.modules.works.entities.QLabel;
-import br.com.divulgaifback.modules.works.entities.Work;
+import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorRequest;
+import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorResponse;
+import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorUseCase;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsResponse;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsUseCase;
-import br.com.divulgaifback.modules.works.useCases.label.list.ListLabelsUseCase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/authors")
 public class AuthorController extends BaseController {
-    private ListAuthorsUseCase listAuthorsUseCase;
+    private final ListAuthorsUseCase listAuthorsUseCase;
+    private final CreateAuthorUseCase createAuthorUseCase;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public CreateAuthorResponse create(@Valid @RequestBody CreateAuthorRequest request) {
+        return createAuthorUseCase.execute(request);
+    }
 
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)

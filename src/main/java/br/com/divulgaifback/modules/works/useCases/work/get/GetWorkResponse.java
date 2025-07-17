@@ -1,7 +1,6 @@
 package br.com.divulgaifback.modules.works.useCases.work.get;
 
 import br.com.divulgaifback.modules.works.entities.Work;
-import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksResponse;
 import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
