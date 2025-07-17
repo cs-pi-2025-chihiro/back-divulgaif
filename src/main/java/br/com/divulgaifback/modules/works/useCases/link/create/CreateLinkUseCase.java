@@ -5,14 +5,17 @@ import br.com.divulgaifback.modules.works.entities.Link;
 import br.com.divulgaifback.modules.works.entities.Work;
 import br.com.divulgaifback.modules.works.repositories.LinkRepository;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class CreateLinkUseCase {
-    private LinkRepository linkRepository;
-    private WorkRepository workRepository;
-    private CreateLinkResponse createLinkResponse;
+    private final LinkRepository linkRepository;
+    private final WorkRepository workRepository;
+    private final CreateLinkResponse createLinkResponse;
 
     @Transactional
     public CreateLinkResponse execute(CreateLinkRequest request) {

@@ -13,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ListLabelsUseCase {
-    private LabelRepository labelRepository;
-    private ListLabelsResponse listLabelsResponse;
+    private final LabelRepository labelRepository;
+    private final ListLabelsResponse listLabelsResponse;
 
     @Transactional(readOnly = true)
     public Page<ListLabelsResponse> execute(BooleanBuilder operators, Predicate predicate, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder(predicate);
-        if (operators.hasValue()) builder.and(operators);
+        if (operators.hasValue() && operators.hasValue()) builder.and(operators);
         Page<Label> labels = labelRepository.findAll(builder, pageable);
         return labels.map(listLabelsResponse::toPresentation);
     }

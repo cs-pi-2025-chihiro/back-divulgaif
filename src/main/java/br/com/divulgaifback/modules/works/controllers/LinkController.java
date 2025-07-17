@@ -1,9 +1,7 @@
 package br.com.divulgaifback.modules.works.controllers;
 
 import br.com.divulgaifback.common.controllers.BaseController;
-import br.com.divulgaifback.modules.works.entities.Label;
 import br.com.divulgaifback.modules.works.entities.Link;
-import br.com.divulgaifback.modules.works.entities.QLabel;
 import br.com.divulgaifback.modules.works.entities.QLink;
 import br.com.divulgaifback.modules.works.useCases.link.create.CreateLinkRequest;
 import br.com.divulgaifback.modules.works.useCases.link.create.CreateLinkResponse;

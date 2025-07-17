@@ -5,14 +5,17 @@ import br.com.divulgaifback.modules.works.entities.Label;
 import br.com.divulgaifback.modules.works.entities.Work;
 import br.com.divulgaifback.modules.works.repositories.LabelRepository;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class CreateLabelUseCase {
-    private LabelRepository labelRepository;
-    private WorkRepository workRepository;
-    private CreateLabelResponse createLabelResponse;
+    private final LabelRepository labelRepository;
+    private final WorkRepository workRepository;
+    private final CreateLabelResponse createLabelResponse;
 
     @Transactional
     public CreateLabelResponse execute(CreateLabelRequest request) {
