@@ -9,7 +9,6 @@ import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelUseCa
 import br.com.divulgaifback.modules.works.useCases.label.list.ListLabelsResponse;
 import br.com.divulgaifback.modules.works.useCases.label.list.ListLabelsUseCase;
 import jakarta.validation.Valid;
-
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
