@@ -25,9 +25,7 @@ public class CreateAuthorUseCase {
             throw DuplicateException.with(Author.class, "email", request.email());
         });
 
-        Author author = new Author();
-        author.setName(request.name());
-        author.setEmail(request.email());
+        Author author = CreateAuthorRequest.toDomain(request);
 
         Optional<User> userOptional = userRepository.findByEmail(request.email());
         if (userOptional.isPresent()) {
