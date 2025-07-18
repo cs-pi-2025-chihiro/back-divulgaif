@@ -57,6 +57,9 @@ public class BaseController {
             case "like":
                 builder.and(pathBuilder.getString(fieldName).containsIgnoreCase(value));
                 break;
+            case "startswith":
+                builder.and(pathBuilder.getString(fieldName).startsWithIgnoreCase(value));
+                break;
         }
     }
 
