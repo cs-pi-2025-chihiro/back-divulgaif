@@ -379,7 +379,7 @@ class WorkControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
     }
 
     @Test
@@ -416,7 +416,7 @@ class WorkControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
     }
 
     @Test
