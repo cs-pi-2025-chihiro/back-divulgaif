@@ -31,11 +31,11 @@ public record CreateWorkRequest(
 
     public record LabelRequest(
             @NotBlank(message = "name is required") String name,
-            @NotBlank(message = "color is required") String color
+            String color
     ) {}
 
     public record LinkRequest(
-            @NotBlank(message = "name is required") String name,
+            String name,
             @NotBlank(message = "url is required") @URL String url,
             String description
     ) {}
