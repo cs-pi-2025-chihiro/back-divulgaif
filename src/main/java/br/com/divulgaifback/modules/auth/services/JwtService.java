@@ -26,7 +26,6 @@ public class JwtService {
 
             return JWT.create()
                     .withIssuer("divulgaif-api")
-                    .withClaim("roles", roles)
                     .withClaim("token_type", tokenType)
                     .withSubject(userId.toString())
                     .withExpiresAt(generateExpiration(expiration))

@@ -22,7 +22,6 @@ public class LoginResponse {
         public Integer id;
         public String name;
         public String email;
-        public String cpf;
         public Set<GetLoginRole> roles;
     }
 

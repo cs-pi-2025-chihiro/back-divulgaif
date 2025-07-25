@@ -71,7 +71,6 @@ class LoginControllerTest {
         
         assertEquals("Mateus Teste", loginResponse.user.name);
         assertEquals("mateusteste@teste.com", loginResponse.user.email);
-        assertEquals("202.108.850-25", loginResponse.user.cpf);
 
         assertNotNull(loginResponse.user.roles);
         assertFalse(loginResponse.user.roles.isEmpty());
