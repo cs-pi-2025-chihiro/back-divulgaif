@@ -33,7 +33,7 @@ public class SuapService {
     }
 
     public void validateSuapData(OauthLoginRequest.UserData data) {
-        if (!data.identificacao().matches("\\d{8,15}")) {
+        if (!data.identificacao().matches("\\d{4,15}")) {
             throw new UnauthorizedException();
         }
 
