@@ -1,0 +1,39 @@
+# Validações
+oauth.userdata.required=Dados do usuário são obrigatórios
+oauth.provider.required=Provedor é obrigatório
+oauth.userdata.identificacao.required=Identificação é obrigatória
+oauth.userdata.nome.required=Nome é obrigatório
+oauth.userdata.email.required=Email é obrigatório
+oauth.userdata.tipousuario.required=Tipo de usuário é obrigatório
+
+login.identifier.required=Nome de usuário ou email é obrigatório
+login.password.required=Senha é obrigatória
+
+author.name.required=Nome é obrigatório
+author.email.required=Email é obrigatório
+
+label.name.required=Nome é obrigatório
+label.workId.required=ID do trabalho é obrigatório
+
+refresh.refreshToken.required=Token de atualização é obrigatório
+
+linkrole.userId.required=ID do usuário é obrigatório
+linkrole.roleIds.required=IDs dos papéis são obrigatórios
+
+createuser.name.required=Nome é obrigatório
+createuser.email.required=Email é obrigatório
+createuser.ra.required=RA é obrigatório
+createuser.cpf.pattern=CPF deve estar no formato xxx.xxx.xxx-xx
+
+createlink.url.required=URL é obrigatória
+createlink.workId.required=ID do trabalho é obrigatório
+
+creatework.title.required=Título é obrigatório
+creatework.workType.required=Tipo de trabalho é obrigatório
+
+creatework.authorequest.name.required=Nome é obrigatório
+creatework.authorequest.email.required=Email é obrigatório
+
+creatework.labelrequest.name.required=Nome é obrigatório
+
+creatework.linkrequest.url.required=URL é obrigatória
