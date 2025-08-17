@@ -3,7 +3,6 @@ package br.com.divulgaifback.modules.works.useCases.work.create;
 import br.com.divulgaifback.common.constants.AuthorConstants;
 import br.com.divulgaifback.common.constants.WorkConstants;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
-import br.com.divulgaifback.common.exceptions.custom.ValidationException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.User;
@@ -90,10 +89,6 @@ public class CreateWorkUseCase {
             String name = newAuthor.name();
             String email = newAuthor.email();
 
-            if (StringUtils.isNullOrEmpty(name) || StringUtils.isNullOrEmpty(email)) {
-                throw new ValidationException("An authors' name and email are required");
-            }
-
             author.setName(name.trim());
             author.setEmail(email.trim());
             author.setType(AuthorConstants.UNREGISTERED_AUTHOR);
@@ -135,10 +130,6 @@ public class CreateWorkUseCase {
             String name = label.name();
             String color = label.color();
 
-            if (StringUtils.isNullOrEmpty(name) || StringUtils.isNullOrEmpty(color)) {
-                throw new ValidationException("A label's name and color are required");
-            }
-
             newLabel.setName(name);
             newLabel.setColor(color);
 
@@ -161,10 +152,6 @@ public class CreateWorkUseCase {
             String name = link.name();
             String url = link.url();
             String description = link.description();
-
-            if (StringUtils.isNullOrEmpty(name) || StringUtils.isNullOrEmpty(url)) {
-                throw new ValidationException("A link's name and url are required");
-            }
 
             newLink.setName(name);
             newLink.setUrl(url);
