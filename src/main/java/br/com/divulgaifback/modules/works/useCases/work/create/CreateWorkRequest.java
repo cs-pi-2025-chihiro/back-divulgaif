@@ -31,7 +31,7 @@ public record CreateWorkRequest(
 
     public record LabelRequest(
             @NotBlank(message = "{creatework.labelrequest.name.required}") String name,
-            String color
+            @NotBlank(message = "{creatework.labelrequest.color.required}") String color
     ) {}
 
     public record LinkRequest(
