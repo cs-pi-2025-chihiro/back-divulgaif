@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -56,32 +57,33 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ValidationException.class)
-    protected ResponseEntity<CustomException> validationImpediment(RuntimeException e, HttpServletRequest request) {
+    protected ResponseEntity<CustomException> validationImpediment(MethodArgumentNotValidException e, HttpServletRequest request) {
+        List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+
         var exception = CustomException.builder()
-                .status(HttpStatus.PRECONDITION_FAILED)
+                .status(HttpStatus.BAD_REQUEST)
                 .timestamp(Instant.now())
-                .error(e.getMessage())
+                .error(String.join(", ", errorMessages))
                 .path(request.getRequestURI())
                 .build();
 
         log.error("ValidationException: {} - Path: {}", exception.getError(), exception.getPath());
 
-        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(exception);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<CustomException> invalidArgument(MethodArgumentNotValidException e, HttpServletRequest request) {
-        String errorMessage = e.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .findFirst()
+        List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .orElse("Validation failed");
+                .toList();
 
         var exception = CustomException.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .timestamp(Instant.now())
-                .error(errorMessage)
+                .error(String.join(", ", errorMessages))
                 .path(request.getRequestURI())
                 .build();
 

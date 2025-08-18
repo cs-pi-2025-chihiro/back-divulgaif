@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.URL;
 import java.util.List;
 
 public record CreateWorkRequest(
-        @NotBlank(message = "title is required") @Size(max = 255) String title,
+        @NotBlank(message = "{creatework.title.required}") @Size(max = 255) String title,
         String description,
         String content,
         String principalLink,
@@ -21,22 +21,22 @@ public record CreateWorkRequest(
         @Valid List<AuthorRequest> newAuthors,
         @Valid List<LabelRequest> workLabels,
         @Valid List<LinkRequest> workLinks,
-        @NotBlank(message = "workType is required") String workType,
+        @NotBlank(message = "{creatework.workType.required}") String workType,
         String workStatus
 ) {
     public record AuthorRequest(
-            @NotBlank(message = "name is required") String name,
-            @NotBlank(message = "email is required") @Email String email
+            @NotBlank(message = "{creatework.authorequest.name.required}") String name,
+            @NotBlank(message = "{creatework.authorequest.email.required}") @Email String email
     ) {}
 
     public record LabelRequest(
-            @NotBlank(message = "name is required") String name,
-            String color
+            @NotBlank(message = "{creatework.labelrequest.name.required}") String name,
+            @NotBlank(message = "{creatework.labelrequest.color.required}") String color
     ) {}
 
     public record LinkRequest(
             String name,
-            @NotBlank(message = "url is required") @URL String url,
+            @NotBlank(message = "{creatework.linkrequest.url.required}") @URL String url,
             String description
     ) {}
 

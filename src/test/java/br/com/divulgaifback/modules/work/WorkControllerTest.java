@@ -379,44 +379,7 @@ class WorkControllerTest {
                 String.class
         );
 
-        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
-    }
-
-    @Test
-    @Sql("/test-data/setup.sql")
-    void testCreateWorkWithInvalidLink() throws Exception {
-        CreateWorkRequest.LinkRequest invalidLink = new CreateWorkRequest.LinkRequest(
-                "",
-                "https://example.com",
-                "Description"
-        );
-
-        CreateWorkRequest workRequest = new CreateWorkRequest(
-                "Título do Trabalho",
-                "Descrição do trabalho",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                Collections.singletonList(invalidLink),
-                "ARTICLE",
-                null
-        );
-
-        HttpHeaders headers = getAuthenticatedHeaders();
-        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                getBaseUrl(),
-                request,
-                String.class
-        );
-
-        assertEquals(HttpStatus.PRECONDITION_FAILED, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test

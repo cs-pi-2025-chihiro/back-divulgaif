@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotNull;
 
 public record CreateLinkRequest(
     String name,
-    @NotNull(message = "url is required") String url,
+    @NotNull(message = "{createlink.url.required}") String url,
     String description,
-    @NotNull(message = "workId is required") Integer workId
+    @NotNull(message = "{createlink.url.required}") Integer workId
 ) {
     public static Link toDomain(CreateLinkRequest request) {
         Link link = new Link();
