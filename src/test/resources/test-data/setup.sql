@@ -4,6 +4,11 @@ INSERT INTO roles (name, created_at) VALUES
  ('IS_ADMIN', CURRENT_TIMESTAMP)
 ON CONFLICT (name) DO NOTHING;
 
+INSERT INTO roles (name, created_at, updated_at) VALUES ('ALUNO', NOW(), NOW());
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO roles (name, created_at, updated_at) VALUES ('PROFESSOR', NOW(), NOW());
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO users (id, name, email, cpf, rg, ra, phone, password, bio, date_of_birth, avatar_url, email_confirmed_at, created_at, secondary_email, user_type) VALUES
   (1, 'Mateus Teste', 'mateusteste@teste.com', '202.108.850-25', null, null, null, '$2a$10$50IuCYfQIsWieK3IBZ1nauiEStJh639sJrkAdWBv18IIOYuYCEPZi', null, null, null, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, 'Aluno'),
   (2, 'Test Student 1', 'student1@test.com', '123.456.789-01', null, '2023001', null, '$2a$10$50IuCYfQIsWieK3IBZ1nauiEStJh639sJrkAdWBv18IIOYuYCEPZi', null, null, null, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, 'Aluno'),
