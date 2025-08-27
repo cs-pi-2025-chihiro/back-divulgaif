@@ -77,3 +77,11 @@ SELECT setval('authors_id_seq', (SELECT MAX(id) FROM authors));
 SELECT setval('labels_id_seq', (SELECT MAX(id) FROM labels));
 SELECT setval('links_id_seq', (SELECT MAX(id) FROM links));
 SELECT setval('works_id_seq', (SELECT MAX(id) FROM works));
+
+INSERT INTO works (id, title, description, content, work_status_id, work_type_id, teacher_id, created_at, updated_at) VALUES
+(2, 'Trabalho para Editar', 'Descrição inicial', 'Conteúdo inicial', 1, 1, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO work_authors(work_id, author_id) VALUES
+    (2, 2)
+ON CONFLICT (work_id, author_id) DO NOTHING;
