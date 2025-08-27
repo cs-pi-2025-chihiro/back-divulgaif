@@ -14,12 +14,15 @@ public class GetWorkResponse {
     public Integer id;
     public String title;
     public String description;
+    public String content;
     public LocalDateTime publishedAt;
     public String imageUrl;
     public List<AuthorsList> authors;
     public List<TeachersList> teachers;
     public List<LabelsList> labels;
     public List<LinksList> links;
+    public WorkTypeResponse workType;
+    public WorkStatusResponse workStatus;
 
     public static class LabelsList {
         public Integer id;
@@ -42,6 +45,16 @@ public class GetWorkResponse {
         public String url;
     }
 
+    public static class WorkTypeResponse {
+        public Integer id;
+        public String name;
+    }
+
+    public static class WorkStatusResponse {
+        public Integer id;
+        public String name;
+    }
+
     @Autowired
     private ModelMapper modelMapper;
 
@@ -50,7 +63,11 @@ public class GetWorkResponse {
         Hibernate.initialize(work.getLabels());
         Hibernate.initialize(work.getLinks());
         Hibernate.initialize(work.getTeacher());
-        return modelMapper.map(work, GetWorkResponse.class);
+        Hibernate.initialize(work.getWorkType());
+        Hibernate.initialize(work.getWorkStatus());
+        GetWorkResponse response = modelMapper.map(work, GetWorkResponse.class);
+        response.content = work.getContent();
+        return response;
     }
 
 }
