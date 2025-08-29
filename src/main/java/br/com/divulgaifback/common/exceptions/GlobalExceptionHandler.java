@@ -1,6 +1,7 @@
 package br.com.divulgaifback.common.exceptions;
 
 import br.com.divulgaifback.common.exceptions.custom.DuplicateException;
+import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.exceptions.custom.ValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +55,20 @@ public class GlobalExceptionHandler {
         log.error("DuplicateException: {} - Path: {}", exception.getError(), exception.getPath());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    protected ResponseEntity<CustomException> forbiddenResource(RuntimeException e, HttpServletRequest request) {
+        var exception = CustomException.builder()
+                .status(HttpStatus.FORBIDDEN)
+                .timestamp(Instant.now())
+                .error(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("ForbiddenException: {} - Path: {}", exception.getError(), exception.getPath());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception);
     }
 
     @ExceptionHandler(ValidationException.class)

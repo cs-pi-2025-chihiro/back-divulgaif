@@ -4,6 +4,8 @@ import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkRequest;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkResponse;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,6 +178,69 @@ class WorkControllerTest {
                 .anyMatch(link -> "GitHub Repository".equals(link.name) &&
                         "https://github.com/user/repo".equals(link.url)));
     }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testSuccessfulWorkUpdate() throws Exception {
+        UpdateWorkRequest.AuthorRequest authorRequest = new UpdateWorkRequest.AuthorRequest(
+                "joao silva",
+                "joao.silva@email.com"
+        );
+
+        UpdateWorkRequest.LabelRequest labelRequest = new UpdateWorkRequest.LabelRequest(
+                "Tecnologia",
+                "#FF5733"
+        );
+
+        UpdateWorkRequest.LinkRequest linkRequest = new UpdateWorkRequest.LinkRequest(
+                "GitHub Repository",
+                "https://github.com/user/repo",
+                "Repository with project source code"
+        );
+
+        UpdateWorkRequest workRequest = new UpdateWorkRequest(
+                "Trabalho Editado",
+                "Descrição editada",
+                "Conteúdo editado",
+                "https://projeto-principal-editado.com",
+                "sistema, web, gestão, edição",
+                "https://example.com/image-editada.jpg",
+                1,
+                Arrays.asList(new UpdateWorkRequest.AuthorIdRequest(2), new UpdateWorkRequest.AuthorIdRequest(3)),
+                List.of(authorRequest),
+                Collections.singletonList(labelRequest),
+                Collections.singletonList(linkRequest),
+                "ARTICLE",
+                "DRAFT"
+        );
+
+        String jsonRequest = objectMapper.writeValueAsString(workRequest);
+        System.out.println("JSON being sent: " + jsonRequest);
+
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<UpdateWorkRequest> request = new HttpEntity<>(workRequest, headers);
+
+
+        ResponseEntity<UpdateWorkResponse> response = restTemplate.exchange(
+                getBaseUrl() + "/2",
+                HttpMethod.PUT,
+                request,
+                UpdateWorkResponse.class
+        );
+
+        System.out.println("Response status: " + response.getStatusCode());
+        System.out.println("Response body: " + response.getBody());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+
+        UpdateWorkResponse workResponse = response.getBody();
+        assertEquals("Trabalho Editado", workResponse.title);
+        assertEquals("Descrição editada", workResponse.description);
+        assertEquals("Conteúdo editado", workResponse.content);
+        assertEquals("DRAFT", workResponse.workStatus.name);
+    }
+
 
     @Test
     @Sql("/test-data/setup.sql")
