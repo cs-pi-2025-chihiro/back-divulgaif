@@ -2,6 +2,7 @@ package br.com.divulgaifback.modules.works.useCases.work.update;
 
 import br.com.divulgaifback.common.constants.AuthorConstants;
 import br.com.divulgaifback.common.constants.WorkConstants;
+import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
@@ -35,6 +36,8 @@ public class UpdateWorkUseCase {
     @Transactional
     public UpdateWorkResponse execute(UpdateWorkRequest request, Integer id) {
         Work work = workRepository.findById(id).orElseThrow(() -> new NotFoundException("Work not found"));
+        
+        validateWorkOwnership(work);
 
         updateWorkFromRequest(work, request);
         handleAuthors(work, request);
@@ -69,24 +72,26 @@ public class UpdateWorkUseCase {
 
     private void handleAuthors(Work work, UpdateWorkRequest request) {
         work.getAuthors().clear();
-        addMainAuthor(work);
-
-        if (hasStudents(request)) {
-            handleDivulgaIfStudents(work, request.studentIds());
-        }
 
         if (hasNewAuthors(request)) {
             handleNonDivulgaIfUsers(work, request.newAuthors());
         }
-    }
+        if (hasStudents(request)) {
+            handleDivulgaIfStudents(work, request.studentIds());
+        }
 
-    private boolean hasNewAuthors(UpdateWorkRequest request) {
-        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
+        addMainAuthor(work);
     }
 
     private void addMainAuthor(Work work) {
         Author author = convertUserToAuthor(AuthService.getUserFromToken());
-        work.addAuthor(author);
+        if (!workContainsAuthorEmail(work, author.getEmail())) {
+            work.addAuthor(author);
+        }
+    }
+    
+    private boolean hasNewAuthors(UpdateWorkRequest request) {
+        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
     }
 
     private boolean hasStudents(UpdateWorkRequest request) {
@@ -97,16 +102,26 @@ public class UpdateWorkUseCase {
         if (Objects.isNull(newAuthors) || newAuthors.isEmpty()) return;
 
         newAuthors.forEach(newAuthor -> {
-            Author author = new Author();
-            String name = newAuthor.name();
-            String email = newAuthor.email();
+            String name = newAuthor.name().trim();
+            String email = newAuthor.email().trim().toLowerCase();
 
-            author.setName(name.trim());
-            author.setEmail(email.trim());
-            author.setType(AuthorConstants.UNREGISTERED_AUTHOR);
+            if (workContainsAuthorEmail(work, email)) {
+                return;
+            }
 
-            authorRepository.save(author);
-            work.addAuthor(author);
+            List<Author> existingAuthors = authorRepository.findAllByEmail(email);
+
+            if (!existingAuthors.isEmpty()) {
+                work.addAuthor(existingAuthors.get(0));
+            } else {
+                Author author = new Author();
+                author.setName(name);
+                author.setEmail(email);
+                author.setType(AuthorConstants.UNREGISTERED_AUTHOR);
+
+                authorRepository.save(author);
+                work.addAuthor(author);
+            }
         });
     }
 
@@ -114,18 +129,51 @@ public class UpdateWorkUseCase {
         studentIds.forEach(studentId -> {
             User student = userRepository.findById(studentId).orElseThrow(() -> NotFoundException.with(User.class, "id", studentId));
             Author studentAuthor = convertUserToAuthor(student);
-            work.addAuthor(studentAuthor);
+            if (!workContainsAuthorEmail(work, studentAuthor.getEmail())) {
+                work.addAuthor(studentAuthor);
+            }
         });
     }
 
-    private Author convertUserToAuthor(User student) {
+    private Author convertUserToAuthor(User user) {
+        String userEmail = user.getEmail().toLowerCase();
+        List<Author> existingAuthors = authorRepository.findAllByEmail(userEmail);
+
+        if (!existingAuthors.isEmpty()) {
+            Optional<Author> linkedToUser = existingAuthors.stream()
+                    .filter(a -> a.getUser() != null && a.getUser().getId().equals(user.getId()))
+                    .findFirst();
+
+            if (linkedToUser.isPresent()) {
+                return linkedToUser.get();
+            }
+
+            Author preferred = existingAuthors.stream()
+                    .filter(a -> a.getUser() != null)
+                    .findFirst()
+                    .orElse(existingAuthors.get(0));
+
+            if (preferred.getUser() == null) {
+                preferred.setUser(user);
+                preferred.setType(AuthorConstants.REGISTERED_AUTHOR);
+                authorRepository.save(preferred);
+            }
+            return preferred;
+        }
+
         Author author = new Author();
-        author.setName(student.getName());
-        author.setEmail(student.getEmail());
+        author.setName(user.getName());
+        author.setEmail(userEmail);
         author.setType(AuthorConstants.REGISTERED_AUTHOR);
-        author.setUser(student);
+        author.setUser(user);
         authorRepository.save(author);
         return author;
+    }
+
+    private boolean workContainsAuthorEmail(Work work, String email) {
+        if (StringUtils.isNullOrEmpty(email)) return false;
+        return work.getAuthors().stream()
+                   .anyMatch(a -> a.getEmail() != null && email.equalsIgnoreCase(a.getEmail()));
     }
 
     private void handleLabels(Work work, List<LabelRequest> labels) {
@@ -140,12 +188,8 @@ public class UpdateWorkUseCase {
             }
 
             Label newLabel = new Label();
-            String name = label.name();
-            String color = label.color();
-
-            newLabel.setName(name);
-            newLabel.setColor(color);
-
+            newLabel.setName(label.name());
+            newLabel.setColor(label.color());
             Label savedLabel = labelRepository.save(newLabel);
             work.addLabel(savedLabel);
         });
@@ -163,16 +207,23 @@ public class UpdateWorkUseCase {
             }
 
             Link newLink = new Link();
-            String name = link.name();
-            String url = link.url();
-            String description = link.description();
-
-            newLink.setName(name);
-            newLink.setUrl(url);
-            newLink.setDescription(description);
-
+            newLink.setName(link.name());
+            newLink.setUrl(link.url());
+            newLink.setDescription(link.description());
             Link savedLink = linkRepository.save(newLink);
             work.addLink(savedLink);
         });
+    }
+
+    private void validateWorkOwnership(Work work) {
+        User currentUser = AuthService.getUserFromToken();
+        
+        boolean isAuthor = work.getAuthors().stream()
+                .anyMatch(author -> author.getUser() != null && 
+                         author.getUser().getId().equals(currentUser.getId()));
+        
+        if (!isAuthor) {
+            throw new ForbiddenException("You can only edit works you have authored");
+        }
     }
 }

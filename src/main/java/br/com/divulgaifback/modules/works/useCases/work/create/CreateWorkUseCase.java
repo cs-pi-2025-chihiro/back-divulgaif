@@ -57,14 +57,24 @@ public class CreateWorkUseCase {
     }
 
     private void handleAuthors(Work work, CreateWorkRequest request) {
-        addMainAuthor(work);
+        if (hasNewAuthors(request)) {
+            handleNonDivulgaIfUsers(work, request.newAuthors());
+        }
 
         if (hasStudents(request)) {
             handleDivulgaIfStudents(work, request.studentIds());
         }
-
+        
+        User currentUser = AuthService.getUserFromToken();
+        boolean currentUserIsInNewAuthors = false;
+        
         if (hasNewAuthors(request)) {
-            handleNonDivulgaIfUsers(work, request.newAuthors());
+            currentUserIsInNewAuthors = request.newAuthors().stream()
+                .anyMatch(author -> author.email().equals(currentUser.getEmail()));
+        }
+        
+        if (!currentUserIsInNewAuthors) {
+            addMainAuthor(work);
         }
     }
 
@@ -85,20 +95,32 @@ public class CreateWorkUseCase {
         if (Objects.isNull(newAuthors) || newAuthors.isEmpty()) return;
 
         newAuthors.forEach(newAuthor -> {
-            Author author = new Author();
-            String name = newAuthor.name();
-            String email = newAuthor.email();
-
-            author.setName(name.trim());
-            author.setEmail(email.trim());
-            author.setType(AuthorConstants.UNREGISTERED_AUTHOR);
-
-            authorRepository.save(author);
-            work.addAuthor(author);
+            String name = newAuthor.name().trim();
+            String email = newAuthor.email().trim();
+            
+            boolean authorAlreadyInWork = work.getAuthors().stream()
+                .anyMatch(existingAuthor -> existingAuthor.getEmail().equals(email));
+                
+            if (authorAlreadyInWork) {
+                return;
+            }
+            
+            List<Author> existingAuthors = authorRepository.findAllByEmail(email);
+            
+            if (!existingAuthors.isEmpty()) {
+                
+                work.addAuthor(existingAuthors.get(0));
+            } else {
+                Author author = new Author();
+                author.setName(name);
+                author.setEmail(email);
+                author.setType(AuthorConstants.UNREGISTERED_AUTHOR);
+                
+                authorRepository.save(author);
+                work.addAuthor(author);
+            }
         });
-    }
-
-    private void handleDivulgaIfStudents(Work work, List<Integer> studentIds) {
+    }    private void handleDivulgaIfStudents(Work work, List<Integer> studentIds) {
         studentIds.forEach(studentId -> {
             User student = userRepository.findById(studentId).orElseThrow(() -> NotFoundException.with(User.class, "id", studentId));
             Author studentAuthor = convertUserToAuthor(student);
@@ -106,12 +128,24 @@ public class CreateWorkUseCase {
         });
     }
 
-    private Author convertUserToAuthor(User student) {
+    private Author convertUserToAuthor(User user) {
+        List<Author> existingAuthors = authorRepository.findAllByEmail(user.getEmail());
+        
+        if (!existingAuthors.isEmpty()) {
+            Author author = existingAuthors.get(0);
+            if (author.getUser() == null) {
+                author.setUser(user);
+                author.setType(AuthorConstants.REGISTERED_AUTHOR);
+                authorRepository.save(author);
+            }
+            return author;
+        }
+        
         Author author = new Author();
-        author.setName(student.getName());
-        author.setEmail(student.getEmail());
+        author.setName(user.getName());
+        author.setEmail(user.getEmail());
         author.setType(AuthorConstants.REGISTERED_AUTHOR);
-        author.setUser(student);
+        author.setUser(user);
         authorRepository.save(author);
         return author;
     }
