@@ -4,6 +4,7 @@ import br.com.divulgaifback.modules.works.entities.Work;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;
 
@@ -17,13 +18,18 @@ public record UpdateWorkRequest(
         String metaTag,
         String imageUrl,
         Integer teacherId,
-        @Valid List<Integer> studentIds,
+        @Valid List<AuthorIdRequest> authors,
         @Valid List<AuthorRequest> newAuthors,
         @Valid List<LabelRequest> workLabels,
         @Valid List<LinkRequest> workLinks,
         @NotBlank(message = "{creatework.workType.required}") String workType,
         String workStatus
 ) {
+    // Novo record para receber o ID do autor existente
+    public record AuthorIdRequest(
+            @NotNull Integer id
+    ) {}
+
     public record AuthorRequest(
             @NotBlank(message = "{creatework.authorequest.name.required}") String name,
             @NotBlank(message = "{creatework.authorequest.email.required}") @Email String email

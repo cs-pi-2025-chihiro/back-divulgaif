@@ -11,11 +11,14 @@ import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.users.repositories.UserRepository;
 import br.com.divulgaifback.modules.works.entities.*;
 import br.com.divulgaifback.modules.works.repositories.*;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorIdRequest;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorRequest;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.LabelRequest;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.LinkRequest;
 import com.querydsl.core.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -76,8 +79,8 @@ public class UpdateWorkUseCase {
         if (hasNewAuthors(request)) {
             handleNonDivulgaIfUsers(work, request.newAuthors());
         }
-        if (hasStudents(request)) {
-            handleDivulgaIfStudents(work, request.studentIds());
+        if (hasExistingAuthors(request)) {
+            handleExistingAuthors(work, request.authors());
         }
 
         addMainAuthor(work);
@@ -94,8 +97,8 @@ public class UpdateWorkUseCase {
         return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
     }
 
-    private boolean hasStudents(UpdateWorkRequest request) {
-        return Objects.nonNull(request.studentIds()) && !request.studentIds().isEmpty();
+    private boolean hasExistingAuthors(UpdateWorkRequest request) {
+        return Objects.nonNull(request.authors()) && !request.authors().isEmpty();
     }
 
     private void handleNonDivulgaIfUsers(Work work, List<AuthorRequest> newAuthors) {
@@ -125,12 +128,12 @@ public class UpdateWorkUseCase {
         });
     }
 
-    private void handleDivulgaIfStudents(Work work, List<Integer> studentIds) {
-        studentIds.forEach(studentId -> {
-            User student = userRepository.findById(studentId).orElseThrow(() -> NotFoundException.with(User.class, "id", studentId));
-            Author studentAuthor = convertUserToAuthor(student);
-            if (!workContainsAuthorEmail(work, studentAuthor.getEmail())) {
-                work.addAuthor(studentAuthor);
+    private void handleExistingAuthors(Work work, List<AuthorIdRequest> authorIds) {
+        authorIds.forEach(authorIdRequest -> {
+            Author author = authorRepository.findById(authorIdRequest.id())
+                    .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorIdRequest.id()));
+            if (!workContainsAuthorEmail(work, author.getEmail())) {
+                work.addAuthor(author);
             }
         });
     }
