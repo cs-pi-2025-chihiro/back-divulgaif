@@ -6,6 +6,9 @@ import br.com.divulgaifback.modules.works.entities.Work;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkRequest;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkUseCase;
+import br.com.divulgaifback.modules.works.useCases.work.edit.EditWorkRequest;
+import br.com.divulgaifback.modules.works.useCases.work.edit.EditWorkResponse;
+import br.com.divulgaifback.modules.works.useCases.work.edit.EditWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksResponse;
@@ -34,6 +37,7 @@ public class WorkController extends BaseController {
     private final ListWorksUseCase listWorksUseCase;
     private final ListMyWorksUseCase listMyWorksUseCase;
     private final GetWorkUseCase getWorkUseCase;
+    private final EditWorkUseCase editWorkUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -65,5 +69,11 @@ public class WorkController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     public GetWorkResponse get(@Valid @Positive @PathVariable Integer workId) {
         return getWorkUseCase.execute(workId);
+    }
+
+    @PutMapping
+    @ResponseStatus(HttpStatus.OK)
+    public EditWorkResponse edit(@Valid @RequestBody EditWorkRequest request) {
+        return editWorkUseCase.execute(request);
     }
 }
