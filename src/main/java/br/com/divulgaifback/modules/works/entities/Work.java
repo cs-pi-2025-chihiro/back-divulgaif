@@ -85,6 +85,9 @@ public class Work extends BaseEntity {
     )
     private Set<Link> links = new HashSet<>();
 
+    @OneToMany(mappedBy = "work", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<History> histories = new HashSet<>();
+
     public void addAuthor(Author author) {
         authors.add(author);
         author.getWorks().add(this);
@@ -113,6 +116,16 @@ public class Work extends BaseEntity {
     public void removeLink(Link link) {
         links.remove(link);
         link.getWorksAssociated().remove(this);
+    }
+
+    public void addHistory(History history) {
+        histories.add(history);
+        history.setWork(this);
+    }
+
+    public void removeHistory(History history) {
+        histories.remove(history);
+        history.setWork(null);
     }
 
     public boolean isSubmitted() {

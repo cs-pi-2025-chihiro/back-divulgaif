@@ -1,6 +1,7 @@
 package br.com.divulgaifback.common.exceptions;
 
 import br.com.divulgaifback.common.exceptions.custom.DuplicateException;
+import br.com.divulgaifback.common.exceptions.custom.EmailException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.exceptions.custom.ValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +72,7 @@ public class GlobalExceptionHandler {
 
         log.error("ValidationException: {} - Path: {}", exception.getError(), exception.getPath());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
+        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(exception);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -132,6 +133,20 @@ public class GlobalExceptionHandler {
         log.error("HttpMediaTypeNotSupportedException: {} - Path: {}", exception.getError(), exception.getPath());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
+    }
+
+    @ExceptionHandler(EmailException.class)
+    protected ResponseEntity<CustomException> failedToSendEmail(HttpMediaTypeNotSupportedException e, HttpServletRequest request) {
+        var exception = CustomException.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .timestamp(Instant.now())
+                .error("Failed to send email")
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("EmailException: {} - Path: {}", exception.getError(), exception.getPath());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception);
     }
 
     public void sendErrorResponse(HttpServletResponse response, HttpStatus status, String error, String path)
