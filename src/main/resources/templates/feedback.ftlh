@@ -87,7 +87,7 @@
                                 <td>
                                     <table class="row-content stack" align="center" border="0" cellpadding="0"
                                         cellspacing="0" role="presentation"
-                                        style="mso-table-lspace:0;mso-table-rspace:0;background-image:url(https://d15k2d11r6t6rl.cloudfront.net/public/users/Integrators/0db9f180-d222-4b2b-9371-cf9393bf4764/0bd8b69e-4024-4f26-9010-6e2a146401fb/banner.svg);background-repeat:no-repeat;color:#000;background-size:cover;width:680px"
+                                        style="mso-table-lspace:0;mso-table-rspace:0;background-image:url(https://d15k2d11r6t6rl.cloudfront.net/public/users/Integrators/0db9f180-d222-4b2b-9371-cf9393bf4764/0bd8b69e-4024-4f26-9010-6e2a146401fb/banner.svg);background-repeat:no-repeat;color:#000;background-color:#063f28;background-size:cover;width:680px"
                                         width="680">
                                         <tbody>
                                             <tr>
@@ -197,11 +197,6 @@
                                                                         <p
                                                                             style="margin:0;font-size:14px;text-align:center;mso-line-height-alt:21px">
                                                                             <strong><span style="font-size:16px;">Equipe DivulgaIF</span></strong>
-                                                                        </p>
-                                                                        <p
-                                                                            style="margin:0;font-size:14px;text-align:center;mso-line-height-alt:21px">
-                                                                            <span
-                                                                                style="font-size:14px;">noresponse@divulgaif.com.br</span>
                                                                         </p>
                                                                     </div>
                                                                 </div>
