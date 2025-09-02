@@ -2,13 +2,11 @@ package br.com.divulgaifback.modules.works.useCases.work.update;
 
 import br.com.divulgaifback.common.constants.AuthorConstants;
 import br.com.divulgaifback.common.constants.WorkConstants;
-import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.User;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
-import br.com.divulgaifback.modules.users.repositories.UserRepository;
 import br.com.divulgaifback.modules.works.entities.*;
 import br.com.divulgaifback.modules.works.repositories.*;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorIdRequest;
@@ -28,7 +26,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UpdateWorkUseCase {
     private final UpdateWorkResponse workResponse;
-    private final UserRepository userRepository;
     private final WorkStatusRepository workStatusRepository;
     private final WorkTypeRepository workTypeRepository;
     private final WorkRepository workRepository;
@@ -38,9 +35,7 @@ public class UpdateWorkUseCase {
 
     @Transactional
     public UpdateWorkResponse execute(UpdateWorkRequest request, Integer id) {
-        Work work = workRepository.findById(id).orElseThrow(() -> new NotFoundException("Work not found"));
-        
-        validateWorkOwnership(work);
+        Work work = workRepository.findById(id).orElseThrow(() -> NotFoundException.with(Work.class, "id", id));
 
         updateWorkFromRequest(work, request);
         handleAuthors(work, request);
@@ -216,17 +211,5 @@ public class UpdateWorkUseCase {
             Link savedLink = linkRepository.save(newLink);
             work.addLink(savedLink);
         });
-    }
-
-    private void validateWorkOwnership(Work work) {
-        User currentUser = AuthService.getUserFromToken();
-        
-        boolean isAuthor = work.getAuthors().stream()
-                .anyMatch(author -> author.getUser() != null && 
-                         author.getUser().getId().equals(currentUser.getId()));
-        
-        if (!isAuthor) {
-            throw new ForbiddenException("You can only edit works you have authored");
-        }
     }
 }

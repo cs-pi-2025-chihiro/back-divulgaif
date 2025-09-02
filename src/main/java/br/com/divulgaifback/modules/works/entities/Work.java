@@ -70,7 +70,7 @@ public class Work extends BaseEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "work_authors",
             joinColumns = @JoinColumn(name = "work_id"),

@@ -1,5 +1,6 @@
 package br.com.divulgaifback.modules.works.useCases.work.get;
 
+import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.works.entities.Work;
 import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
@@ -67,24 +68,20 @@ public class GetWorkResponse {
         Hibernate.initialize(work.getTeacher());
         Hibernate.initialize(work.getWorkType());
         Hibernate.initialize(work.getWorkStatus());
-        
-        work.getAuthors().forEach(author -> {
-            if (author.getUser() != null) {
-                Hibernate.initialize(author.getUser());
-            }
-        });
-        
         GetWorkResponse response = modelMapper.map(work, GetWorkResponse.class);
-        response.content = work.getContent();
-        
+
         response.authors = work.getAuthors().stream()
-                .map(this::mapAuthor)
+                .map(this::initializeAndMapAuthor)
                 .toList();
-        
+
         return response;
     }
-    
-    private AuthorsList mapAuthor(br.com.divulgaifback.modules.users.entities.Author author) {
+
+    private AuthorsList initializeAndMapAuthor(Author author) {
+        if (author.getUser() != null) {
+            Hibernate.initialize(author.getUser());
+        }
+
         AuthorsList authorResponse = new AuthorsList();
         authorResponse.id = author.getId();
         authorResponse.name = author.getName();

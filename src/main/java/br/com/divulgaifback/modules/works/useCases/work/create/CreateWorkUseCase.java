@@ -131,16 +131,21 @@ public class CreateWorkUseCase {
     private Author convertUserToAuthor(User user) {
         List<Author> existingAuthors = authorRepository.findAllByEmail(user.getEmail());
         
-        if (!existingAuthors.isEmpty()) {
-            Author author = existingAuthors.get(0);
-            if (author.getUser() == null) {
-                author.setUser(user);
-                author.setType(AuthorConstants.REGISTERED_AUTHOR);
-                authorRepository.save(author);
-            }
-            return author;
+        return !existingAuthors.isEmpty() ? 
+            updateExistingAuthor(existingAuthors.get(0), user) : 
+            createNewAuthor(user);
+    }
+    
+    private Author updateExistingAuthor(Author author, User user) {
+        if (Objects.isNull(author.getUser())) {
+            author.setUser(user);
+            author.setType(AuthorConstants.REGISTERED_AUTHOR);
+            authorRepository.save(author);
         }
-        
+        return author;
+    }
+    
+    private Author createNewAuthor(User user) {
         Author author = new Author();
         author.setName(user.getName());
         author.setEmail(user.getEmail());
