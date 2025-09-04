@@ -10,6 +10,9 @@ import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksResponse;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksUseCase;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkResponse;
+import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.listMine.ListMyWorksResponse;
 import br.com.divulgaifback.modules.works.useCases.work.listMine.ListMyWorksUseCase;
 import com.querydsl.core.BooleanBuilder;
@@ -34,11 +37,19 @@ public class WorkController extends BaseController {
     private final ListWorksUseCase listWorksUseCase;
     private final ListMyWorksUseCase listMyWorksUseCase;
     private final GetWorkUseCase getWorkUseCase;
+    private final UpdateWorkUseCase updateWorkUseCase;
+
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateWorkResponse create(@Valid @RequestBody CreateWorkRequest request) {
         return this.createWorkUseCase.execute(request);
+    }
+
+    @PutMapping("/{workId}")
+    @ResponseStatus(HttpStatus.OK)
+    public UpdateWorkResponse update(@Valid @RequestBody UpdateWorkRequest request, @PathVariable @Positive Integer workId) {
+        return this.updateWorkUseCase.execute(request, workId);
     }
 
     @GetMapping("/list")

@@ -1,5 +1,6 @@
 package br.com.divulgaifback.modules.works.useCases.work.get;
 
+import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.works.entities.Work;
 import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
@@ -14,12 +15,15 @@ public class GetWorkResponse {
     public Integer id;
     public String title;
     public String description;
+    public String content;
     public LocalDateTime publishedAt;
     public String imageUrl;
     public List<AuthorsList> authors;
     public List<TeachersList> teachers;
     public List<LabelsList> labels;
     public List<LinksList> links;
+    public WorkTypeResponse workType;
+    public WorkStatusResponse workStatus;
 
     public static class LabelsList {
         public Integer id;
@@ -29,6 +33,8 @@ public class GetWorkResponse {
     public static class AuthorsList {
         public Integer id;
         public String name;
+        public Integer userId;
+        
     }
 
     public static class TeachersList {
@@ -42,6 +48,16 @@ public class GetWorkResponse {
         public String url;
     }
 
+    public static class WorkTypeResponse {
+        public Integer id;
+        public String name;
+    }
+
+    public static class WorkStatusResponse {
+        public Integer id;
+        public String name;
+    }
+
     @Autowired
     private ModelMapper modelMapper;
 
@@ -50,7 +66,27 @@ public class GetWorkResponse {
         Hibernate.initialize(work.getLabels());
         Hibernate.initialize(work.getLinks());
         Hibernate.initialize(work.getTeacher());
-        return modelMapper.map(work, GetWorkResponse.class);
+        Hibernate.initialize(work.getWorkType());
+        Hibernate.initialize(work.getWorkStatus());
+        GetWorkResponse response = modelMapper.map(work, GetWorkResponse.class);
+
+        response.authors = work.getAuthors().stream()
+                .map(this::initializeAndMapAuthor)
+                .toList();
+
+        return response;
+    }
+
+    private AuthorsList initializeAndMapAuthor(Author author) {
+        if (author.getUser() != null) {
+            Hibernate.initialize(author.getUser());
+        }
+
+        AuthorsList authorResponse = new AuthorsList();
+        authorResponse.id = author.getId();
+        authorResponse.name = author.getName();
+        authorResponse.userId = author.getUser() != null ? author.getUser().getId() : null;
+        return authorResponse;
     }
 
 }
