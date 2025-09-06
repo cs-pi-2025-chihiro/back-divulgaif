@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.URL;
 import java.util.List;
 
 public record CreateWorkRequest(
-        @NotBlank(message = "{creatework.id.required") Integer id,
         @NotBlank(message = "{creatework.title.required}") @Size(max = 255) String title,
         @NotBlank(message = "{creatework.description.required}") String description,
         @NotBlank(message = "{creatework.content.required}") String content,
