@@ -4,21 +4,13 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import br.com.divulgaifback.common.entities.BaseEntity;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.User;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -94,6 +86,9 @@ public class Work extends BaseEntity {
     )
     private Set<Link> links = new HashSet<>();
 
+    @OneToMany(mappedBy = "work", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<History> histories = new HashSet<>();
+
     public void addAuthor(Author author) {
         authors.add(author);
         author.getWorks().add(this);
@@ -122,6 +117,16 @@ public class Work extends BaseEntity {
     public void removeLink(Link link) {
         links.remove(link);
         link.getWorksAssociated().remove(this);
+    }
+
+    public void addHistory(History history) {
+        histories.add(history);
+        history.setWork(this);
+    }
+
+    public void removeHistory(History history) {
+        histories.remove(history);
+        history.setWork(null);
     }
 
     public boolean isSubmitted() {
