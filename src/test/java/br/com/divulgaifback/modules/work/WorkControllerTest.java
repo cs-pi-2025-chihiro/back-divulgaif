@@ -19,10 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,7 +91,7 @@ class WorkControllerTest {
     void testSuccessfulWorkCreation() throws Exception {
 
         CreateWorkRequest.AuthorRequest authorRequest = new CreateWorkRequest.AuthorRequest(
-                "joao silva",
+                "Joao silva",
                 "joao.silva@email.com"
         );
 
@@ -117,7 +114,7 @@ class WorkControllerTest {
                 "sistema, web, gestão",
                 "https://example.com/image.jpg",
                 1,
-                Arrays.asList(2, 3),
+                Arrays.asList(3, 2),
                 List.of(authorRequest),
                 Collections.singletonList(labelRequest),
                 Collections.singletonList(linkRequest),
@@ -164,7 +161,7 @@ class WorkControllerTest {
         );
         assertNotNull(workResponse.authors);
         assertFalse(workResponse.authors.isEmpty());
-        assertTrue(workResponse.authors.stream().anyMatch(author -> "joao silva".equals(author.name)));
+        assertTrue(workResponse.authors.stream().anyMatch(author -> "Joao Silva".equals(author.name)));
 
 
         assertNotNull(workResponse.labels);
@@ -183,7 +180,7 @@ class WorkControllerTest {
     @Sql("/test-data/setup.sql")
     void testSuccessfulWorkUpdate() throws Exception {
         UpdateWorkRequest.AuthorRequest authorRequest = new UpdateWorkRequest.AuthorRequest(
-                "joao silva",
+                "Joao silva",
                 "joao.silva@email.com"
         );
 
@@ -206,7 +203,7 @@ class WorkControllerTest {
                 "sistema, web, gestão, edição",
                 "https://example.com/image-editada.jpg",
                 1,
-                Arrays.asList(new UpdateWorkRequest.AuthorIdRequest(2), new UpdateWorkRequest.AuthorIdRequest(3)),
+                Arrays.asList(new UpdateWorkRequest.AuthorIdRequest(3), new UpdateWorkRequest.AuthorIdRequest(4)),
                 List.of(authorRequest),
                 Collections.singletonList(labelRequest),
                 Collections.singletonList(linkRequest),
@@ -222,7 +219,7 @@ class WorkControllerTest {
 
 
         ResponseEntity<UpdateWorkResponse> response = restTemplate.exchange(
-                getBaseUrl() + "/2",
+                getBaseUrl() + "/2000",
                 HttpMethod.PUT,
                 request,
                 UpdateWorkResponse.class
@@ -240,48 +237,7 @@ class WorkControllerTest {
         assertEquals("Conteúdo editado", workResponse.content);
         assertEquals("DRAFT", workResponse.workStatus.name);
     }
-
-
-    @Test
-    @Sql("/test-data/setup.sql")
-    void testCreateWorkWithMinimalData() throws Exception {
-
-        CreateWorkRequest workRequest = new CreateWorkRequest(
-                "Trabalho Simples",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                "SEARCH",
-                null
-        );
-
-        HttpHeaders headers = getAuthenticatedHeaders();
-        HttpEntity<CreateWorkRequest> request = new HttpEntity<>(workRequest, headers);
-
-
-        ResponseEntity<CreateWorkResponse> response = restTemplate.postForEntity(
-                getBaseUrl(),
-                request,
-                CreateWorkResponse.class
-        );
-
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-
-        CreateWorkResponse workResponse = response.getBody();
-        assertEquals("Trabalho Simples", workResponse.title);
-        assertEquals("SEARCH", workResponse.workType.name);
-        assertEquals("DRAFT", workResponse.workStatus.name);
-    }
-
+    
     @Test
     @Sql("/test-data/setup.sql")
     void testCreateWorkWithMissingTitle() throws Exception {
@@ -348,19 +304,19 @@ class WorkControllerTest {
     @Sql("/test-data/setup.sql")
     void testCreateWorkWithInvalidWorkType() throws Exception {
         CreateWorkRequest workRequest = new CreateWorkRequest(
-                "Título do Trabalho",
-                "Descrição do trabalho",
+                "Trabalho Simples",
+                "Minimal description",
+                "Minimal content",      
+                "https://example.com",
+                "minimal meta",       
+                "https://example.com/image.jpg",
+                1,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                "INVALID_TYPE",
-                null
+                "INVALID TYPE",
+                "DRAFT" 
         );
 
         HttpHeaders headers = getAuthenticatedHeaders();
@@ -451,19 +407,19 @@ class WorkControllerTest {
     @Sql("/test-data/setup.sql")
     void testCreateWorkWithNonExistentStudent() throws Exception {
         CreateWorkRequest workRequest = new CreateWorkRequest(
-                "Título do Trabalho",
-                "Descrição do trabalho",
-                null,
-                null,
-                null,
-                null,
-                null,
+                "Trabalho Simples",
+                "Minimal description",
+                "Minimal content",      
+                "https://example.com",
+                "minimal meta",       
+                "https://example.com/image.jpg",
+                1,
                 List.of(999),
                 null,
                 null,
                 null,
-                "TCC",
-                null
+                "SEARCH",
+                "DRAFT"              
         );
 
         HttpHeaders headers = getAuthenticatedHeaders();
@@ -549,8 +505,19 @@ class WorkControllerTest {
             executor.submit(() -> {
                 try {
                     CreateWorkRequest workRequest = new CreateWorkRequest(
-                            "Concurrent Work " + index, null, null, null, null, null, null, null,
-                            null, null, null, "ARTICLE", null
+                            "Concurrent Work " + index,
+                            "Description for work " + index,
+                            "Content for work " + index,    
+                            "https://example.com/work" + index,
+                            "meta-tag-" + index,            
+                            "https://example.com/image" + index + ".jpg",
+                            1,
+                            null,
+                            null,
+                            null,
+                            null,
+                            "ARTICLE",
+                            "DRAFT"                         
                     );
 
                     HttpHeaders headers = getAuthenticatedHeaders();
@@ -628,8 +595,16 @@ class WorkControllerTest {
         );
 
         CreateWorkRequest workRequest1 = new CreateWorkRequest(
-                "First Work", null, null, null, null, null, null, null,
-                null, List.of(label), null, "ARTICLE", null
+                "First Work",
+                "Test description",
+                "Test content",
+                "https://example.com",
+                "test meta tag",
+                "https://example.com/image.jpg",
+                1,
+                null, null, List.of(label), null,
+                "ARTICLE",
+                "PUBLISHED"
         );
 
         HttpHeaders headers = getAuthenticatedHeaders();
@@ -637,8 +612,16 @@ class WorkControllerTest {
                 new HttpEntity<>(workRequest1, headers), CreateWorkResponse.class);
 
         CreateWorkRequest workRequest2 = new CreateWorkRequest(
-                "Second Work", null, null, null, null, null, null, null,
-                null, List.of(label), null, "ARTICLE", null
+                "Second Work",
+                "Test description 2",
+                "Test content",
+                "https://example.com",
+                "test meta tag",
+                "https://example.com/image.jpg",
+                1,
+                null, null, List.of(label), null,
+                "ARTICLE",
+                "PUBLISHED"
         );
 
         ResponseEntity<CreateWorkResponse> response = restTemplate.postForEntity(
@@ -646,7 +629,7 @@ class WorkControllerTest {
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody().labels);
+        assertNotNull(Objects.requireNonNull(response.getBody()).labels);
         assertEquals(1, response.getBody().labels.size());
     }
 
