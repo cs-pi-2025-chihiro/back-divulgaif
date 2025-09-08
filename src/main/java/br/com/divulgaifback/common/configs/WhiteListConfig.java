@@ -23,7 +23,7 @@ public class WhiteListConfig {
             new AntPathRequestMatcher("/links/list", "GET"),
             new AntPathRequestMatcher("/works/{id}", "GET"),
             new AntPathRequestMatcher("/swagger-ui/**", "GET"),
-            new AntPathRequestMatcher("/divulgaif/api-docs/**", "GET")
+            new AntPathRequestMatcher("/v3/api-docs/**", "GET")
         );
         return new OrRequestMatcher(matchers);
     }
