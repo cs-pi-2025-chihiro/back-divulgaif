@@ -19,10 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -549,8 +546,19 @@ class WorkControllerTest {
             executor.submit(() -> {
                 try {
                     CreateWorkRequest workRequest = new CreateWorkRequest(
-                            "Concurrent Work " + index, null, null, null, null, null, null, null,
-                            null, null, null, "ARTICLE", null
+                            "Concurrent Work " + index,
+                            "Description for work " + index,
+                            "Content for work " + index,    
+                            "https://example.com/work" + index,
+                            "meta-tag-" + index,            
+                            "https://example.com/image" + index + ".jpg",
+                            1,
+                            null,
+                            null,
+                            null,
+                            null,
+                            "ARTICLE",
+                            "DRAFT"                         
                     );
 
                     HttpHeaders headers = getAuthenticatedHeaders();
@@ -628,8 +636,16 @@ class WorkControllerTest {
         );
 
         CreateWorkRequest workRequest1 = new CreateWorkRequest(
-                "First Work", null, null, null, null, null, null, null,
-                null, List.of(label), null, "ARTICLE", null
+                "First Work",
+                "Test description",
+                "Test content",
+                "https://example.com",
+                "test meta tag",
+                "https://example.com/image.jpg",
+                1,
+                null, null, List.of(label), null,
+                "ARTICLE",
+                "PUBLISHED"
         );
 
         HttpHeaders headers = getAuthenticatedHeaders();
@@ -637,8 +653,16 @@ class WorkControllerTest {
                 new HttpEntity<>(workRequest1, headers), CreateWorkResponse.class);
 
         CreateWorkRequest workRequest2 = new CreateWorkRequest(
-                "Second Work", null, null, null, null, null, null, null,
-                null, List.of(label), null, "ARTICLE", null
+                "Second Work",
+                "Test description 2",
+                "Test content",
+                "https://example.com",
+                "test meta tag",
+                "https://example.com/image.jpg",
+                1,
+                null, null, List.of(label), null,
+                "ARTICLE",
+                "PUBLISHED"
         );
 
         ResponseEntity<CreateWorkResponse> response = restTemplate.postForEntity(
@@ -646,7 +670,7 @@ class WorkControllerTest {
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody().labels);
+        assertNotNull(Objects.requireNonNull(response.getBody()).labels);
         assertEquals(1, response.getBody().labels.size());
     }
 

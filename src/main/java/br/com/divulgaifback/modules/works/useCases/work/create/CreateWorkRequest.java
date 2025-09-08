@@ -49,7 +49,6 @@ public record CreateWorkRequest(
         work.setPrincipalLink(request.principalLink);
         work.setMetaTag(request.metaTag);
         work.setImageUrl(request.imageUrl);
-        // Adicionar os demais campos conforme necessário
         return work;
     }
 }

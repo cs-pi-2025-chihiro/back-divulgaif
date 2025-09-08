@@ -50,7 +50,7 @@ public class LinkControllerTest {
     @Sql("/test-data/setup.sql")
     void testCreateLink() {
         HttpHeaders headers = getAuthenticatedHeaders();
-        CreateLinkRequest createLinkRequest = new CreateLinkRequest("Meu Link", "http://meulink.com", "Descrição do link", 1);
+        CreateLinkRequest createLinkRequest = new CreateLinkRequest("Meu Link", "http://meulink.com", "Descrição do link", 1000);
         HttpEntity<CreateLinkRequest> requestEntity = new HttpEntity<>(createLinkRequest, headers);
 
         ResponseEntity<CreateLinkResponse> response = restTemplate.postForEntity(
