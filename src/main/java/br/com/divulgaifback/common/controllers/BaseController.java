@@ -20,12 +20,7 @@ public class BaseController {
                 if (parts.length == 2) {
                     String fieldName = parts[0];
                     String operator = parts[1];
-
-                    try {
-                        addPredicateForField(builder, pathBuilder, fieldName, operator, value);
-                    } catch (Exception e) {
-                        System.err.println("Invalid filter: " + key + "=" + value);
-                    }
+                    addPredicateForField(builder, pathBuilder, fieldName, operator, value);
                 }
             }
         });

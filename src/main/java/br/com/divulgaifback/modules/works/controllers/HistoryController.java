@@ -3,8 +3,6 @@ package br.com.divulgaifback.modules.works.controllers;
 import br.com.divulgaifback.modules.works.useCases.history.create.CreateHistoryRequest;
 import br.com.divulgaifback.modules.works.useCases.history.create.CreateHistoryResponse;
 import br.com.divulgaifback.modules.works.useCases.history.create.CreateHistoryUseCase;
-import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelRequest;
-import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

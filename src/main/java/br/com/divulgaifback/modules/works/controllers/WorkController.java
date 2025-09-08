@@ -10,6 +10,10 @@ import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksResponse;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksUseCase;
+import br.com.divulgaifback.modules.works.useCases.work.publish.PublishWorkUseCase;
+import br.com.divulgaifback.modules.works.useCases.work.reject.RejectWorkUseCase;
+import br.com.divulgaifback.modules.works.useCases.work.requestChanges.RequestChangesRequest;
+import br.com.divulgaifback.modules.works.useCases.work.requestChanges.RequestChangesUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkUseCase;
@@ -38,7 +42,9 @@ public class WorkController extends BaseController {
     private final ListMyWorksUseCase listMyWorksUseCase;
     private final GetWorkUseCase getWorkUseCase;
     private final UpdateWorkUseCase updateWorkUseCase;
-
+    private final PublishWorkUseCase publishWorkUseCase;
+    private final RejectWorkUseCase rejectWorkUseCase;
+    private final RequestChangesUseCase requestChangesUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -76,5 +82,23 @@ public class WorkController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     public GetWorkResponse get(@Valid @Positive @PathVariable Integer workId) {
         return getWorkUseCase.execute(workId);
+    }
+
+    @PutMapping("/publish/{workId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void publish(@Valid @Positive @PathVariable Integer workId) {
+        this.publishWorkUseCase.execute(workId);
+    }
+
+    @PutMapping("/reject/{workId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void reject(@Valid @Positive @PathVariable Integer workId) {
+        this.rejectWorkUseCase.execute(workId);
+    }
+
+    @PutMapping("/request-changes/{workId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void requestChanges(@Valid @RequestBody RequestChangesRequest request, @Valid @Positive @PathVariable Integer workId) {
+        this.requestChangesUseCase.execute(request, workId);
     }
 }
