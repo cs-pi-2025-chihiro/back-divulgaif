@@ -25,7 +25,6 @@ public record UpdateWorkRequest(
         @NotBlank(message = "{creatework.workType.required}") String workType,
         String workStatus
 ) {
-    // Novo record para receber o ID do autor existente
     public record AuthorIdRequest(
             @NotNull Integer id
     ) {}

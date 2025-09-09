@@ -25,5 +25,7 @@ jobs:
           git pull origin develop
           
           cd ../infra-divulgaif
-          docker compose -f docker-compose.develop.yml up -d --build --no-deps backend-dev
           
+          docker compose -f docker-compose.develop.yml down --remove-orphans
+          
+          docker compose -f docker-compose.develop.yml up -d --build
