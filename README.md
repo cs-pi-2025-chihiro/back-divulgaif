@@ -9,3 +9,7 @@ PO: Andrey Jodar
 ### Ele está acessível em:
 
 [https://divulgaif.com.br/](https://divulgaif.com.br/)
+
+### A documentação pode ser encontrada em:
+
+[Nosso Swagger!](https://desenvolvimento.divulgaif.com.br/api/v1/swagger-ui/index.html)
