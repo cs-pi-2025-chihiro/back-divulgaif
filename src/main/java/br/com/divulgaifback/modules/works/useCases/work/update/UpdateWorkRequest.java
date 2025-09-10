@@ -1,4 +1,4 @@
-package br.com.divulgaifback.modules.works.useCases.work.create;
+package br.com.divulgaifback.modules.works.useCases.work.update;
 
 import br.com.divulgaifback.modules.works.entities.Work;
 import jakarta.validation.Valid;
@@ -10,21 +10,25 @@ import org.hibernate.validator.constraints.URL;
 
 import java.util.List;
 
-public record CreateWorkRequest(
+public record UpdateWorkRequest(
         @NotBlank(message = "{creatework.title.required}") @Size(max = 255) String title,
-        @NotBlank(message = "{creatework.description.required}") String description,
-        @NotBlank(message = "{creatework.content.required}") String content,
-        @NotBlank(message = "{creatework.principalLink.required}") @URL String principalLink,
-        @NotBlank(message = "{creatework.metaTag.required}") String metaTag,
-        @NotBlank(message = "{creatework.imageUrl.required}") @URL String imageUrl,
-        @NotNull(message = "{creatework.teacherId.required}") Integer teacherId,
-        @Valid List<Integer> studentIds,
+        String description,
+        String content,
+        String principalLink,
+        String metaTag,
+        String imageUrl,
+        Integer teacherId,
+        @Valid List<AuthorIdRequest> authors,
         @Valid List<AuthorRequest> newAuthors,
         @Valid List<LabelRequest> workLabels,
         @Valid List<LinkRequest> workLinks,
         @NotBlank(message = "{creatework.workType.required}") String workType,
-        @NotBlank(message = "{creatework.workStatus.required}") String workStatus
+        String workStatus
 ) {
+    public record AuthorIdRequest(
+            @NotNull Integer id
+    ) {}
+
     public record AuthorRequest(
             @NotBlank(message = "{creatework.authorequest.name.required}") String name,
             @NotBlank(message = "{creatework.authorequest.email.required}") @Email String email
@@ -41,7 +45,7 @@ public record CreateWorkRequest(
             String description
     ) {}
 
-    public static Work toDomain(CreateWorkRequest request) {
+    public static Work toDomain(UpdateWorkRequest request) {
         Work work = new Work();
         work.setTitle(request.title);
         work.setDescription(request.description);

@@ -6,11 +6,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record CreateUserRequest(
-        @NotBlank(message = "Name is required") String name,
-        @Email @NotBlank(message = "Email is required") String email,
+        @NotBlank(message = "{createuser.name.required}") String name,
+        @Email @NotBlank(message = "{createuser.email.required}") String email,
         @Email String secondaryEmail,
-        @NotBlank(message = "RA is required") String ra,
-        @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF must be in the format xxx.xxx.xxx-xx")
+        @NotBlank(message = "{createuser.ra.required}") String ra,
+        @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "{createuser.cpf.pattern}")
         String cpf,
         String bio,
         String password,

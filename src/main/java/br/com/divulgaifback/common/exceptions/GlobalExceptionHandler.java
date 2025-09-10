@@ -1,6 +1,8 @@
 package br.com.divulgaifback.common.exceptions;
 
 import br.com.divulgaifback.common.exceptions.custom.DuplicateException;
+import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
+import br.com.divulgaifback.common.exceptions.custom.EmailException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.exceptions.custom.ValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -55,12 +58,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception);
     }
 
-    @ExceptionHandler(ValidationException.class)
-    protected ResponseEntity<CustomException> validationImpediment(RuntimeException e, HttpServletRequest request) {
+    @ExceptionHandler(ForbiddenException.class)
+    protected ResponseEntity<CustomException> forbiddenResource(RuntimeException e, HttpServletRequest request) {
         var exception = CustomException.builder()
-                .status(HttpStatus.PRECONDITION_FAILED)
+                .status(HttpStatus.FORBIDDEN)
                 .timestamp(Instant.now())
                 .error(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("ForbiddenException: {} - Path: {}", exception.getError(), exception.getPath());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    protected ResponseEntity<CustomException> validationImpediment(MethodArgumentNotValidException e, HttpServletRequest request) {
+        List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+
+        var exception = CustomException.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .timestamp(Instant.now())
+                .error(String.join(", ", errorMessages))
                 .path(request.getRequestURI())
                 .build();
 
@@ -71,17 +92,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<CustomException> invalidArgument(MethodArgumentNotValidException e, HttpServletRequest request) {
-        String errorMessage = e.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .findFirst()
+        List<String> errorMessages = e.getBindingResult().getFieldErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .orElse("Validation failed");
+                .toList();
 
         var exception = CustomException.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .timestamp(Instant.now())
-                .error(errorMessage)
+                .error(String.join(", ", errorMessages))
                 .path(request.getRequestURI())
                 .build();
 
@@ -130,6 +148,20 @@ public class GlobalExceptionHandler {
         log.error("HttpMediaTypeNotSupportedException: {} - Path: {}", exception.getError(), exception.getPath());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
+    }
+
+    @ExceptionHandler(EmailException.class)
+    protected ResponseEntity<CustomException> failedToSendEmail(HttpMediaTypeNotSupportedException e, HttpServletRequest request) {
+        var exception = CustomException.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .timestamp(Instant.now())
+                .error("Failed to send email")
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("EmailException: {} - Path: {}", exception.getError(), exception.getPath());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception);
     }
 
     public void sendErrorResponse(HttpServletResponse response, HttpStatus status, String error, String path)

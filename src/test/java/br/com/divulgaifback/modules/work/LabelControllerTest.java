@@ -50,7 +50,7 @@ public class LabelControllerTest {
     @Sql("/test-data/setup.sql")
     void testCreateLabel() {
         HttpHeaders headers = getAuthenticatedHeaders();
-        CreateLabelRequest createLabelRequest = new CreateLabelRequest("Nova Label", 1);
+        CreateLabelRequest createLabelRequest = new CreateLabelRequest("Nova Label", 1000);
         HttpEntity<CreateLabelRequest> requestEntity = new HttpEntity<>(createLabelRequest, headers);
 
         ResponseEntity<CreateLabelResponse> response = restTemplate.postForEntity(

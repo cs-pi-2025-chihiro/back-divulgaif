@@ -52,21 +52,21 @@ INSERT INTO links (id, url, name, description, created_at, updated_at) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO works (id, title, description, content, principal_link, meta_tag, work_status_id, work_type_id, teacher_id, image_url, created_at, updated_at, submitted_at, approved_at) VALUES
-    (1, 'Desenvolvimento de Sistema Web', 'Sistema web para gerenciamento de projetos acadêmicos', 'Conteúdo detalhado do trabalho...', 'https://projeto-principal.com', 'sistema, web, gestão', 4, 1, 4, 'https://example.com/image.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    (1000, 'Desenvolvimento de Sistema Web', 'Sistema web para gerenciamento de projetos acadêmicos', 'Conteúdo detalhado do trabalho...', 'https://projeto-principal.com', 'sistema, web, gestão', 4, 1, 4, 'https://example.com/image.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO work_authors(work_id, author_id) VALUES
-    (1, 1),
-    (1, 2),
-    (1, 3)
+    (1000, 1),
+    (1000, 2),
+    (1000, 3)
 ON CONFLICT (work_id, author_id) DO NOTHING;
 
 INSERT INTO work_labels(work_id, label_id) VALUES
-    (1, 1)
+    (1000, 1)
 ON CONFLICT (work_id, label_id) DO NOTHING;
 
 INSERT INTO work_links(work_id, link_id) VALUES
-    (1, 1)
+    (1000, 1)
 ON CONFLICT (work_id, link_id) DO NOTHING;
 
 SELECT setval('roles_id_seq', (SELECT MAX(id) FROM roles));
@@ -77,3 +77,11 @@ SELECT setval('authors_id_seq', (SELECT MAX(id) FROM authors));
 SELECT setval('labels_id_seq', (SELECT MAX(id) FROM labels));
 SELECT setval('links_id_seq', (SELECT MAX(id) FROM links));
 SELECT setval('works_id_seq', (SELECT MAX(id) FROM works));
+
+INSERT INTO works (id, title, description, content, work_status_id, work_type_id, teacher_id, created_at, updated_at) VALUES
+(2000, 'Trabalho para Editar', 'Descrição inicial', 'Conteúdo inicial', 1, 1, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO work_authors(work_id, author_id) VALUES
+    (2000, 2)
+ON CONFLICT (work_id, author_id) DO NOTHING;
