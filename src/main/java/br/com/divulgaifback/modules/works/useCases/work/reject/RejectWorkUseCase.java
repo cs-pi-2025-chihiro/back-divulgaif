@@ -7,6 +7,7 @@ import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
 import br.com.divulgaifback.modules.works.repositories.WorkStatusRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class RejectWorkUseCase {
     private final WorkRepository workRepository;
     private final WorkStatusRepository workStatusRepository;
 
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     @Transactional
     public void execute(Integer workId) {
         Work work = workRepository.findById(workId).orElseThrow(() -> NotFoundException.with(Work.class, "id", workId));

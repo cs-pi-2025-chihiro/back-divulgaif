@@ -2,12 +2,16 @@ package br.com.divulgaifback.modules.works.useCases.work.update;
 
 import br.com.divulgaifback.common.constants.AuthorConstants;
 import br.com.divulgaifback.common.constants.WorkConstants;
+import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
+import br.com.divulgaifback.modules.users.entities.Role;
 import br.com.divulgaifback.modules.users.entities.User;
+import br.com.divulgaifback.modules.users.entities.enums.RoleEnum;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.works.entities.*;
+import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.*;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorIdRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorRequest;
@@ -58,8 +62,21 @@ public class UpdateWorkUseCase {
     }
 
     private void addStatus(Work work, String workStatus) {
-        String statusName = StringUtils.isNullOrEmpty(workStatus) ? WorkConstants.DRAFT_STATUS : workStatus;
-        WorkStatus status = workStatusRepository.findByName(statusName).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", statusName));
+        if (StringUtils.isNullOrEmpty(workStatus)) workStatus = WorkConstants.DRAFT_STATUS;
+
+        boolean isPublishingRejectingOrRequestingChanges = (workStatus.equals(WorkStatusEnum.PUBLISHED.name())
+                || workStatus.equals(WorkStatusEnum.REJECTED.name())
+                || workStatus.equals(WorkStatusEnum.PENDING_CHANGES.name()));
+
+        User currentUser = AuthService.getUserFromToken();
+        boolean isTeacherOrAdmin = currentUser.hasRole(RoleEnum.IS_TEACHER.getValue())
+                || currentUser.hasRole(RoleEnum.IS_ADMIN.getValue());
+
+        if (isPublishingRejectingOrRequestingChanges && !isTeacherOrAdmin) throw new ForbiddenException("{editwork.statusvalidation.forbidden}");
+
+        String finalWorkStatus = workStatus;
+        WorkStatus status = workStatusRepository.findByName(workStatus)
+                .orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", finalWorkStatus));
         work.setWorkStatus(status);
     }
 

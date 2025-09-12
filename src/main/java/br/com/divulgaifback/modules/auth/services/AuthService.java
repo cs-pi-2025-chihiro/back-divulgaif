@@ -40,6 +40,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshResponse refreshTokenResponse;
 
+    @Value("{auth.jwt.suap-token.secret}")
+    private String SUAP_PROVIDER;
+
     @Value("${auth.jwt.access-token.expiration}")
     private Integer accessTokenExpirationTime;
 
@@ -67,7 +70,7 @@ public class AuthService {
         try {
             User user = null;
 
-            if (Objects.equals(request.provider(), SuapProviderConstants.SUAP_PROVIDER)) {
+            if (Objects.equals(request.provider(), SUAP_PROVIDER)) {
                 user = suapService.suapOauthLogin(request);
             }
 
