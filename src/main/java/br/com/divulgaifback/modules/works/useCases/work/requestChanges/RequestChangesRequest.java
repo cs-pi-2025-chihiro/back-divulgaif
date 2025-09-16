@@ -9,15 +9,13 @@ import java.util.List;
 import java.util.Objects;
 
 public record RequestChangesRequest(
-        @NotBlank(message = "{requestChanges.message.required}") String message,
-        @NotNull(message = "{requestChanges.userId.required}") @Positive Integer userId,
+        @NotBlank(message = "{requestChanges.message.required}") String feedbackMessage,
         @Size(max = 255) String title,
         String description,
         String content,
         String principalLink,
         String metaTag,
         String imageUrl,
-        Integer teacherId,
         @Valid List<AuthorIdRequest> authors,
         @Valid List<AuthorRequest> newAuthors,
         @Valid List<LabelRequest> workLabels,

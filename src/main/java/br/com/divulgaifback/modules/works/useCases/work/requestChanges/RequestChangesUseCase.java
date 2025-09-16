@@ -1,9 +1,14 @@
 package br.com.divulgaifback.modules.works.useCases.work.requestChanges;
 
 import br.com.divulgaifback.common.constants.AuthorConstants;
+import br.com.divulgaifback.common.exceptions.custom.EmailException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.exceptions.custom.ValidationException;
+import br.com.divulgaifback.common.services.EmailService;
+import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
+import br.com.divulgaifback.modules.users.entities.User;
+import br.com.divulgaifback.modules.users.entities.enums.RoleEnum;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.works.entities.*;
 import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
@@ -27,6 +32,8 @@ public class RequestChangesUseCase {
     private final AuthorRepository authorRepository;
     private final LinkRepository linkRepository;
     private final LabelRepository labelRepository;
+    private final HistoryRepository historyRepository;
+    private final EmailService emailService;
 
     @Secured({"IS_ADMIN", "IS_TEACHER"})
     @Transactional
@@ -41,6 +48,8 @@ public class RequestChangesUseCase {
         handleAuthors(work, request);
         handleLabels(work, request.workLabels());
         handleLinks(work, request.workLinks());
+
+        sendFeedback(work, request);
     }
 
     private void validateApproval(Work work) {
@@ -151,5 +160,27 @@ public class RequestChangesUseCase {
             Link savedLink = linkRepository.save(newLink);
             work.addLink(savedLink);
         });
+    }
+
+    private void sendFeedback(Work work, RequestChangesRequest request) {
+        History history = new History();
+        User teacher = AuthService.getUserFromToken();
+        history.setTeacher(teacher);
+        history.setMessage(request.feedbackMessage());
+        history.setStatusId(WorkStatusEnum.PENDING_CHANGES.id);
+        work.addHistory(history);
+        work.setTeacher(teacher);
+
+        for (Author author : work.getAuthors()) {
+            if (Objects.isNull(author.getUser()) || !author.getUser().hasRole(RoleEnum.IS_STUDENT.getValue())) continue;
+            try {
+                User user = author.getUser();
+                emailService.sendNewFeedbackAddedEmail(user.getEmail(), user.getName(), work.getTitle());
+            } catch (Exception e) {
+                throw new EmailException(e.getMessage());
+            }
+        }
+
+        historyRepository.save(history);
     }
 }

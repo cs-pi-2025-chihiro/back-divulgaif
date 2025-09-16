@@ -90,13 +90,7 @@ public class WorkController extends BaseController {
         this.publishWorkUseCase.execute(workId);
     }
 
-    @PatchMapping("/reject/{workId}")
-    @ResponseStatus(HttpStatus.OK)
-    public void reject(@Valid @Positive @PathVariable Integer workId) {
-        this.rejectWorkUseCase.execute(workId);
-    }
-
-    @PutMapping("/request-changes/{workId}")
+    @PostMapping("/request-changes/{workId}")
     @ResponseStatus(HttpStatus.OK)
     public void requestChanges(@Valid @RequestBody RequestChangesRequest request, @Valid @Positive @PathVariable Integer workId) {
         this.requestChangesUseCase.execute(request, workId);
