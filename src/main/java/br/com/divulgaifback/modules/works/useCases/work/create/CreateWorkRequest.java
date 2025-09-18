@@ -40,6 +40,7 @@ public record CreateWorkRequest(
             String description
     ) {}
 
+
     public static Work toDomain(CreateWorkRequest request) {
         Work work = new Work();
         work.setTitle(request.title);
