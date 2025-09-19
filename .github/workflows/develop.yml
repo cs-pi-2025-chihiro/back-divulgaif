@@ -26,6 +26,4 @@ jobs:
           
           cd ../infra-divulgaif
           
-          docker compose -f docker-compose.develop.yml down --remove-orphans
-          
-          docker compose -f docker-compose.develop.yml up -d --build
+          docker compose -f docker-compose.develop.yml up -d --build backend-dev
