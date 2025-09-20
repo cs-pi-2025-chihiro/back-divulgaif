@@ -1,6 +1,6 @@
 package br.com.divulgaifback.modules.auth.services;
 
-import br.com.divulgaifback.common.constants.SuapProviderConstants;
+import br.com.divulgaifback.common.exceptions.custom.SuapException;
 import br.com.divulgaifback.common.exceptions.custom.UnauthorizedException;
 import br.com.divulgaifback.modules.auth.entities.AuthenticatedUser;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
@@ -40,7 +40,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshResponse refreshTokenResponse;
 
-    @Value("{auth.jwt.suap-token.secret}")
+    @Value("${auth.jwt.suap-token.secret}")
     private String SUAP_PROVIDER;
 
     @Value("${auth.jwt.access-token.expiration}")
@@ -85,7 +85,7 @@ public class AuthService {
             if (e instanceof UnauthorizedException || e instanceof BadCredentialsException || e instanceof InternalAuthenticationServiceException) {
                 throw new UnauthorizedException();
             }
-            throw new RuntimeException("Error in suap login: " + e.getMessage());
+            throw new SuapException("Error in suap login: " + e.getMessage());
         }
     }
 
