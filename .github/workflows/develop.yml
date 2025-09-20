@@ -26,4 +26,7 @@ jobs:
           
           cd ../infra-divulgaif
           
+          docker compose -f docker-compose.develop.yml stop backend-dev || true
+          docker compose -f docker-compose.develop.yml rm -f backend-dev || true
+          
           docker compose -f docker-compose.develop.yml up -d --build backend-dev
