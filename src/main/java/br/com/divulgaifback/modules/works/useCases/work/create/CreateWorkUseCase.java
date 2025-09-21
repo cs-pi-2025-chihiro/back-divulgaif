@@ -122,7 +122,7 @@ public class CreateWorkUseCase {
         });
     }    private void handleDivulgaIfStudents(Work work, List<Integer> studentIds) {
         studentIds.forEach(studentId -> {
-            User student = userRepository.findById(studentId).orElseThrow(() -> NotFoundException.with(User.class, "id", studentId));
+            User student = authorRepository.findUserIdById(studentId).orElseThrow(() -> NotFoundException.with(User.class, "id", studentId));
             Author studentAuthor = convertUserToAuthor(student);
             work.addAuthor(studentAuthor);
         });
