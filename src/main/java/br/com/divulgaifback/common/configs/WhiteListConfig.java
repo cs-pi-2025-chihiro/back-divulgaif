@@ -18,6 +18,7 @@ public class WhiteListConfig {
             new AntPathRequestMatcher("/error", "GET"),
             new AntPathRequestMatcher("/auth/**", "POST"),
             new AntPathRequestMatcher("/users", "POST"),
+            new AntPathRequestMatcher("/authors/list", "GET"),
             new AntPathRequestMatcher("/works/list", "GET"),
             new AntPathRequestMatcher("/labels/list", "GET"),
             new AntPathRequestMatcher("/links/list", "GET"),
