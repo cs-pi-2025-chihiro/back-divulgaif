@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ListWorksUseCase {
@@ -23,10 +22,8 @@ public class ListWorksUseCase {
     public Page<ListWorksResponse> execute(BooleanBuilder operators, Predicate predicate, Pageable pageable,
             String search) {
         BooleanBuilder builder = new BooleanBuilder(predicate);
-        if (operators != null && operators.hasValue()) {
-            
-            builder.and(operators);
-        }
+        if (operators != null && operators.hasValue()) builder.and(operators);
+        
 
         if (search != null && !search.trim().isEmpty()) {
             String searchTerm = search.trim();            
