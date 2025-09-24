@@ -11,12 +11,12 @@ import br.com.divulgaifback.modules.works.useCases.work.get.GetWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksResponse;
 import br.com.divulgaifback.modules.works.useCases.work.list.ListWorksUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.publish.PublishWorkUseCase;
-import br.com.divulgaifback.modules.works.useCases.work.reject.RejectWorkUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.requestChanges.RequestChangesRequest;
 import br.com.divulgaifback.modules.works.useCases.work.requestChanges.RequestChangesUseCase;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkResponse;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkUseCase;
+import io.micrometer.common.lang.Nullable;
 import br.com.divulgaifback.modules.works.useCases.work.listMine.ListMyWorksResponse;
 import br.com.divulgaifback.modules.works.useCases.work.listMine.ListMyWorksUseCase;
 import com.querydsl.core.BooleanBuilder;
@@ -43,7 +43,6 @@ public class WorkController extends BaseController {
     private final GetWorkUseCase getWorkUseCase;
     private final UpdateWorkUseCase updateWorkUseCase;
     private final PublishWorkUseCase publishWorkUseCase;
-    private final RejectWorkUseCase rejectWorkUseCase;
     private final RequestChangesUseCase requestChangesUseCase;
 
     @PostMapping
@@ -65,7 +64,7 @@ public class WorkController extends BaseController {
             @QuerydslPredicate(root = Work.class) Predicate basePredicate,
             Pageable pagination) {
         BooleanBuilder operatorPredicate = buildOperatorPredicate(params, QWork.work);
-        return listWorksUseCase.execute(operatorPredicate, basePredicate, pagination);
+        return listWorksUseCase.execute(operatorPredicate, basePredicate, pagination, search);
     }
 
     @GetMapping("/list-my-works")
