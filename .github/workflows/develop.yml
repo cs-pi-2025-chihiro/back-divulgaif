@@ -20,13 +20,7 @@ jobs:
         port: ${{ secrets.SERVER_PORT }}
         script: |
           cd ~/divulgaif/back-divulgaif
-          
           git checkout develop
           git pull origin develop
-          
           cd ../infra-divulgaif
-          
-          docker compose -f docker-compose.develop.yml stop backend-dev || true
-          docker compose -f docker-compose.develop.yml rm -f backend-dev || true
-          
-          docker compose -f docker-compose.develop.yml up -d --build backend-dev
+          docker compose -f docker-compose.develop.yml up -d --build --force-recreate backend-dev
