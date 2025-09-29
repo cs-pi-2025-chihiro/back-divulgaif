@@ -5,7 +5,7 @@ public enum WorkStatusEnum {
     SUBMITTED(2),
     PENDING_CHANGES(3),
     PUBLISHED(4),
-    REJECTED(5);
+    REJECTED(5) ;
 
     public final Integer id;
 
