@@ -6,7 +6,6 @@ import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
-import br.com.divulgaifback.modules.users.entities.Role;
 import br.com.divulgaifback.modules.users.entities.User;
 import br.com.divulgaifback.modules.users.entities.enums.RoleEnum;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
