@@ -12,7 +12,6 @@ import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.works.entities.*;
 import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.*;
-import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorIdRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.LabelRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.LinkRequest;
@@ -91,7 +90,7 @@ public class UpdateWorkUseCase {
             handleNonDivulgaIfUsers(work, request.newAuthors());
         }
         if (hasExistingAuthors(request)) {
-            handleExistingAuthors(work, request.authors());
+            handleExistingAuthors(work, request.studentIds());
         }
 
         addMainAuthor(work);
@@ -109,7 +108,7 @@ public class UpdateWorkUseCase {
     }
 
     private boolean hasExistingAuthors(UpdateWorkRequest request) {
-        return Objects.nonNull(request.authors()) && !request.authors().isEmpty();
+        return Objects.nonNull(request.studentIds()) && !request.studentIds().isEmpty();
     }
 
     private void handleNonDivulgaIfUsers(Work work, List<AuthorRequest> newAuthors) {
@@ -139,10 +138,10 @@ public class UpdateWorkUseCase {
         });
     }
 
-    private void handleExistingAuthors(Work work, List<AuthorIdRequest> authorIds) {
+    private void handleExistingAuthors(Work work, List<Integer> authorIds) {
         authorIds.forEach(authorIdRequest -> {
-            Author author = authorRepository.findById(authorIdRequest.id())
-                    .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorIdRequest.id()));
+            Author author = authorRepository.findById(authorIdRequest)
+                    .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorIdRequest));
             if (!workContainsAuthorEmail(work, author.getEmail())) {
                 work.addAuthor(author);
             }
