@@ -18,17 +18,13 @@ public record UpdateWorkRequest(
         String metaTag,
         String imageUrl,
         Integer teacherId,
-        @Valid List<AuthorIdRequest> authors,
+        @Valid List<Integer> studentIds,
         @Valid List<AuthorRequest> newAuthors,
         @Valid List<LabelRequest> workLabels,
         @Valid List<LinkRequest> workLinks,
         @NotBlank(message = "{creatework.workType.required}") String workType,
         String workStatus
 ) {
-    public record AuthorIdRequest(
-            @NotNull Integer id
-    ) {}
-
     public record AuthorRequest(
             @NotBlank(message = "{creatework.authorequest.name.required}") String name,
             @NotBlank(message = "{creatework.authorequest.email.required}") @Email String email
