@@ -24,3 +24,4 @@ jobs:
           git pull origin develop
           cd ../infra-divulgaif
           docker compose -f docker-compose.develop.yml up -d --build --force-recreate backend-dev
+          
