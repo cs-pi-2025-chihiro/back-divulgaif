@@ -11,6 +11,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class PublishWorkUseCase {
@@ -22,6 +24,7 @@ public class PublishWorkUseCase {
     public void execute(Integer workId) {
         Work work = workRepository.findById(workId).orElseThrow(() -> NotFoundException.with(Work.class, "id", workId));
         WorkStatus publishedStatus = workStatusRepository.findById(WorkStatusEnum.PUBLISHED.getId()).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "id", WorkStatusEnum.PUBLISHED.getId()));
+        work.setApprovedAt(LocalDateTime.now());
         work.setWorkStatus(publishedStatus);
         workRepository.save(work);
     }

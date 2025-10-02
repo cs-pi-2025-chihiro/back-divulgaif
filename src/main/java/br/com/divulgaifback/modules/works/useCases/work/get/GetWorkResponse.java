@@ -16,7 +16,7 @@ public class GetWorkResponse {
     public String title;
     public String description;
     public String content;
-    public LocalDateTime publishedAt;
+    public LocalDateTime approvedAt;
     public String imageUrl;
     public List<AuthorsList> authors;
     public List<TeachersList> teachers;

@@ -165,8 +165,9 @@ public class RequestChangesUseCase {
     private void sendFeedback(Work work, RequestChangesRequest request) {
         History history = new History();
         User teacher = AuthService.getUserFromToken();
+        String feedbackMessage = request.feedbackMessage();
         history.setTeacher(teacher);
-        history.setMessage(request.feedbackMessage());
+        history.setMessage(feedbackMessage);
         history.setStatusId(WorkStatusEnum.PENDING_CHANGES.id);
         work.addHistory(history);
         work.setTeacher(teacher);
@@ -175,7 +176,7 @@ public class RequestChangesUseCase {
             if (Objects.isNull(author.getUser()) || !author.getUser().hasRole(RoleEnum.IS_STUDENT.getValue())) continue;
             try {
                 User user = author.getUser();
-                emailService.sendNewFeedbackAddedEmail(user.getEmail(), user.getName(), work.getTitle());
+                emailService.sendNewFeedbackAddedEmail(user.getEmail(), user.getName(), work.getTitle(), feedbackMessage);
             } catch (Exception e) {
                 throw new EmailException(e.getMessage());
             }
