@@ -1,12 +1,9 @@
 package br.com.divulgaifback.modules.works.useCases.work.listMine;
 
 import br.com.divulgaifback.modules.auth.services.AuthService;
-import br.com.divulgaifback.modules.works.entities.QWork;
 import br.com.divulgaifback.modules.works.entities.Work;
-import br.com.divulgaifback.modules.works.entities.WorkStatus;
 import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
-import br.com.divulgaifback.modules.works.repositories.WorkStatusRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;

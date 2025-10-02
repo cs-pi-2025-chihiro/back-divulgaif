@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
                 .toList();
 
         var exception = CustomException.builder()
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.PRECONDITION_FAILED)
                 .timestamp(Instant.now())
                 .error(String.join(", ", errorMessages))
                 .path(request.getRequestURI())

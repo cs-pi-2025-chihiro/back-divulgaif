@@ -26,19 +26,19 @@ public class EmailService {
     private String from;
 
     private final Configuration configuration;
-    private final Environment environment;
     private final JavaMailSender mailSender;
 
-    public void sendNewFeedbackAddedEmail(String to, String name, String workTitle) throws IOException, TemplateException, MessagingException {
+    public void sendNewFeedbackAddedEmail(String to, String name, String workTitle, String feedback) throws IOException, TemplateException, MessagingException {
         StringWriter stringWriter = new StringWriter();
         Map<String, Object> model = new HashMap<>();
 
         model.put("name", name);
         model.put("workTitle", workTitle);
+        model.put("feedback", feedback);
 
         configuration.getTemplate("feedback.ftlh").process(model, stringWriter);
         var body = stringWriter.getBuffer().toString();
-        sendMailHtml(to, null, "Prezado " + name + ", novo Feedback adicionado em seu trabalho: " + workTitle, body); //todo: colocar mensagem em inglês ou português
+        sendMailHtml(to, null, "Prezado " + name + ", novo Feedback adicionado em seu trabalho: " + workTitle, body);
     }
 
     public void sendMailHtml(String to, String cc, String subject, String body) throws MessagingException {
