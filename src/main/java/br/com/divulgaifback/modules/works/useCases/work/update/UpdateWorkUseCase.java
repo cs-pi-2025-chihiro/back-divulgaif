@@ -2,14 +2,16 @@ package br.com.divulgaifback.modules.works.useCases.work.update;
 
 import br.com.divulgaifback.common.constants.AuthorConstants;
 import br.com.divulgaifback.common.constants.WorkConstants;
+import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.User;
+import br.com.divulgaifback.modules.users.entities.enums.RoleEnum;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.works.entities.*;
+import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.*;
-import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorIdRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.AuthorRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.LabelRequest;
 import br.com.divulgaifback.modules.works.useCases.work.update.UpdateWorkRequest.LinkRequest;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,8 +61,21 @@ public class UpdateWorkUseCase {
     }
 
     private void addStatus(Work work, String workStatus) {
-        String statusName = StringUtils.isNullOrEmpty(workStatus) ? WorkConstants.DRAFT_STATUS : workStatus;
-        WorkStatus status = workStatusRepository.findByName(statusName).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", statusName));
+        if (StringUtils.isNullOrEmpty(workStatus)) workStatus = WorkConstants.DRAFT_STATUS;
+        if (workStatus.equals(WorkStatusEnum.SUBMITTED.name())) work.setSubmittedAt(LocalDateTime.now());
+
+        boolean isPublishingRejectingOrRequestingChanges = (workStatus.equals(WorkStatusEnum.PUBLISHED.name())
+                || workStatus.equals(WorkStatusEnum.REJECTED.name())
+                || workStatus.equals(WorkStatusEnum.PENDING_CHANGES.name()));
+
+        User currentUser = AuthService.getUserFromToken();
+        boolean isTeacherOrAdmin = currentUser.hasRole(RoleEnum.IS_TEACHER.getValue())
+                || currentUser.hasRole(RoleEnum.IS_ADMIN.getValue());
+
+        if (isPublishingRejectingOrRequestingChanges && !isTeacherOrAdmin) throw new ForbiddenException("{editwork.statusvalidation.forbidden}");
+
+        String finalWorkStatus = workStatus;
+        WorkStatus status = workStatusRepository.findByName(workStatus).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", finalWorkStatus));
         work.setWorkStatus(status);
     }
 
@@ -70,15 +86,17 @@ public class UpdateWorkUseCase {
 
     private void handleAuthors(Work work, UpdateWorkRequest request) {
         work.getAuthors().clear();
-
-        if (hasNewAuthors(request)) {
-            handleNonDivulgaIfUsers(work, request.newAuthors());
-        }
-        if (hasExistingAuthors(request)) {
-            handleExistingAuthors(work, request.authors());
-        }
-
+        if (hasNewAuthors(request)) handleNonDivulgaIfUsers(work, request.newAuthors());
+        if (hasExistingAuthors(request)) handleExistingAuthors(work, request.studentIds());
         addMainAuthor(work);
+    }
+
+    private boolean hasNewAuthors(UpdateWorkRequest request) {
+        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
+    }
+
+    private boolean hasExistingAuthors(UpdateWorkRequest request) {
+        return Objects.nonNull(request.studentIds()) && !request.studentIds().isEmpty();
     }
 
     private void addMainAuthor(Work work) {
@@ -86,14 +104,6 @@ public class UpdateWorkUseCase {
         if (!workContainsAuthorEmail(work, author.getEmail())) {
             work.addAuthor(author);
         }
-    }
-    
-    private boolean hasNewAuthors(UpdateWorkRequest request) {
-        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
-    }
-
-    private boolean hasExistingAuthors(UpdateWorkRequest request) {
-        return Objects.nonNull(request.authors()) && !request.authors().isEmpty();
     }
 
     private void handleNonDivulgaIfUsers(Work work, List<AuthorRequest> newAuthors) {
@@ -123,10 +133,10 @@ public class UpdateWorkUseCase {
         });
     }
 
-    private void handleExistingAuthors(Work work, List<AuthorIdRequest> authorIds) {
+    private void handleExistingAuthors(Work work, List<Integer> authorIds) {
         authorIds.forEach(authorIdRequest -> {
-            Author author = authorRepository.findById(authorIdRequest.id())
-                    .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorIdRequest.id()));
+            Author author = authorRepository.findById(authorIdRequest)
+                    .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorIdRequest));
             if (!workContainsAuthorEmail(work, author.getEmail())) {
                 work.addAuthor(author);
             }

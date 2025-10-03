@@ -16,7 +16,7 @@ public class ListMyWorksResponse {
     public Integer id;
     public String title;
     public String description;
-    public LocalDateTime publishedAt;
+    public LocalDateTime approvedAt;
     public String imageUrl;
     public String status;
     public String type;

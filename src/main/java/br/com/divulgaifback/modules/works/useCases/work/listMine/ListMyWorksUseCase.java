@@ -1,8 +1,8 @@
 package br.com.divulgaifback.modules.works.useCases.work.listMine;
 
 import br.com.divulgaifback.modules.auth.services.AuthService;
-import br.com.divulgaifback.modules.works.entities.QWork;
 import br.com.divulgaifback.modules.works.entities.Work;
+import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
@@ -21,11 +21,11 @@ public class ListMyWorksUseCase {
     @Transactional(readOnly = true)
     public Page<ListMyWorksResponse> execute(BooleanBuilder operators, Predicate predicate, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder(predicate);
+        String[] worksToList = new String[]{WorkStatusEnum.DRAFT.name(), WorkStatusEnum.PENDING_CHANGES.name()};
         if (operators.hasValue()) builder.and(operators);
 
         int myId = AuthService.getUserFromToken().getId();
-        builder.and(QWork.work.authors.any().user.id.eq(myId));
-        Page<Work> works = workRepository.findAll(builder, pageable);
+        Page<Work> works = workRepository.findMyWorks(worksToList, myId, pageable);
         return works.map(listMyWorksResponse::toPresentation);
     }
 }

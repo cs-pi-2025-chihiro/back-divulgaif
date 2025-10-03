@@ -203,7 +203,7 @@ class WorkControllerTest {
                 "sistema, web, gestão, edição",
                 "https://example.com/image-editada.jpg",
                 1,
-                Arrays.asList(new UpdateWorkRequest.AuthorIdRequest(3), new UpdateWorkRequest.AuthorIdRequest(4)),
+                Arrays.asList(3, 4),
                 List.of(authorRequest),
                 Collections.singletonList(labelRequest),
                 Collections.singletonList(linkRequest),

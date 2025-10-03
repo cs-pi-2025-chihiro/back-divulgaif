@@ -27,7 +27,7 @@ public class StorageService {
     public String upload(String originalImageName, InputStream data, long length) {
         try {
             String newImageName = UUID.randomUUID() + originalImageName.substring(originalImageName.lastIndexOf("."));
-            String key = "courses/images/" + newImageName;
+            String key = "courses/images/" + newImageName; // diretório público do bucket
 
             String contentType = getContentType(originalImageName);
 

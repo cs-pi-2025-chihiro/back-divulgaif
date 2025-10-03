@@ -175,8 +175,10 @@
                                                                     <div class
                                                                         style="font-size:14px;font-family:Arial,Helvetica Neue,Helvetica,sans-serif;mso-line-height-alt:21px;color:#000;line-height:1.5">
                                                                         <p style="margin:0;font-size:14px;text-align:center;mso-line-height-alt:21px; text-align: justify;">
-                                                                            Novo feedback adicionado ao seu trabalho, "${workTitle}".
-                                                                            Você pode visualizar o feedback acessando sua conta no DivulgaIF.
+                                                                            Novo feedback adicionado ao seu trabalho, "${workTitle}":
+                                                                            <p style="margin:0; font-size:14px; mso-line-height-alt:21px; text-align: justify;">
+                                                                                ${feedback}
+                                                                            </p>
                                                                         </p>
                                                                     </div>
                                                                 </div>

@@ -57,13 +57,9 @@ public class CreateWorkUseCase {
     }
 
     private void handleAuthors(Work work, CreateWorkRequest request) {
-        if (hasNewAuthors(request)) {
-            handleNonDivulgaIfUsers(work, request.newAuthors());
-        }
-
-        if (hasStudents(request)) {
-            handleDivulgaIfStudents(work, request.studentIds());
-        }
+        if (hasNewAuthors(request)) handleNewAuthors(work, request.newAuthors());
+        
+        if (hasStudents(request)) handleExistingAuthors(work, request.studentIds());
         
         User currentUser = AuthService.getUserFromToken();
         boolean currentUserIsInNewAuthors = false;
@@ -91,7 +87,7 @@ public class CreateWorkUseCase {
         return Objects.nonNull(request.studentIds()) && !request.studentIds().isEmpty();
     }
 
-    private void handleNonDivulgaIfUsers(Work work, List<AuthorRequest> newAuthors) {
+    private void handleNewAuthors(Work work, List<AuthorRequest> newAuthors) {
         if (Objects.isNull(newAuthors) || newAuthors.isEmpty()) return;
 
         newAuthors.forEach(newAuthor -> {
@@ -108,7 +104,6 @@ public class CreateWorkUseCase {
             List<Author> existingAuthors = authorRepository.findAllByEmail(email);
             
             if (!existingAuthors.isEmpty()) {
-                
                 work.addAuthor(existingAuthors.get(0));
             } else {
                 Author author = new Author();
@@ -120,11 +115,19 @@ public class CreateWorkUseCase {
                 work.addAuthor(author);
             }
         });
-    }    private void handleDivulgaIfStudents(Work work, List<Integer> studentIds) {
-        studentIds.forEach(studentId -> {
-            User student = userRepository.findById(studentId).orElseThrow(() -> NotFoundException.with(User.class, "id", studentId));
-            Author studentAuthor = convertUserToAuthor(student);
-            work.addAuthor(studentAuthor);
+    }
+
+    private void handleExistingAuthors(Work work, List<Integer> authorIds) {
+        authorIds.forEach(authorId -> {
+            Optional<User> userOptional = authorRepository.findUserIdById(authorId);
+
+            if (userOptional.isPresent()) {
+                Author studentAuthor = convertUserToAuthor(userOptional.get());
+                work.addAuthor(studentAuthor);
+            } else {
+                Author author = authorRepository.findById(authorId).orElseThrow(() -> NotFoundException.with(Author.class, "id", authorId.toString()));
+                work.addAuthor(author);
+            }
         });
     }
 
