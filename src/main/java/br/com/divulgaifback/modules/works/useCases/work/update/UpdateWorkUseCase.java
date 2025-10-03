@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +62,7 @@ public class UpdateWorkUseCase {
 
     private void addStatus(Work work, String workStatus) {
         if (StringUtils.isNullOrEmpty(workStatus)) workStatus = WorkConstants.DRAFT_STATUS;
+        if (workStatus.equals(WorkStatusEnum.SUBMITTED.name())) work.setSubmittedAt(LocalDateTime.now());
 
         boolean isPublishingRejectingOrRequestingChanges = (workStatus.equals(WorkStatusEnum.PUBLISHED.name())
                 || workStatus.equals(WorkStatusEnum.REJECTED.name())
@@ -73,8 +75,7 @@ public class UpdateWorkUseCase {
         if (isPublishingRejectingOrRequestingChanges && !isTeacherOrAdmin) throw new ForbiddenException("{editwork.statusvalidation.forbidden}");
 
         String finalWorkStatus = workStatus;
-        WorkStatus status = workStatusRepository.findByName(workStatus)
-                .orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", finalWorkStatus));
+        WorkStatus status = workStatusRepository.findByName(workStatus).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", finalWorkStatus));
         work.setWorkStatus(status);
     }
 
@@ -85,15 +86,17 @@ public class UpdateWorkUseCase {
 
     private void handleAuthors(Work work, UpdateWorkRequest request) {
         work.getAuthors().clear();
-
-        if (hasNewAuthors(request)) {
-            handleNonDivulgaIfUsers(work, request.newAuthors());
-        }
-        if (hasExistingAuthors(request)) {
-            handleExistingAuthors(work, request.studentIds());
-        }
-
+        if (hasNewAuthors(request)) handleNonDivulgaIfUsers(work, request.newAuthors());
+        if (hasExistingAuthors(request)) handleExistingAuthors(work, request.studentIds());
         addMainAuthor(work);
+    }
+
+    private boolean hasNewAuthors(UpdateWorkRequest request) {
+        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
+    }
+
+    private boolean hasExistingAuthors(UpdateWorkRequest request) {
+        return Objects.nonNull(request.studentIds()) && !request.studentIds().isEmpty();
     }
 
     private void addMainAuthor(Work work) {
@@ -101,14 +104,6 @@ public class UpdateWorkUseCase {
         if (!workContainsAuthorEmail(work, author.getEmail())) {
             work.addAuthor(author);
         }
-    }
-    
-    private boolean hasNewAuthors(UpdateWorkRequest request) {
-        return Objects.nonNull(request.newAuthors()) && !request.newAuthors().isEmpty();
-    }
-
-    private boolean hasExistingAuthors(UpdateWorkRequest request) {
-        return Objects.nonNull(request.studentIds()) && !request.studentIds().isEmpty();
     }
 
     private void handleNonDivulgaIfUsers(Work work, List<AuthorRequest> newAuthors) {
