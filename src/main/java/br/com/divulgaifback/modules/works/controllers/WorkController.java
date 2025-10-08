@@ -72,10 +72,11 @@ public class WorkController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     public Page<ListMyWorksResponse> listMyWorks(
             @RequestParam Map<String, String> params,
+            @Nullable @RequestParam String search,
             @QuerydslPredicate(root = Work.class) Predicate basePredicate,
             Pageable pagination) {
         BooleanBuilder operatorPredicate = buildOperatorPredicate(params, QWork.work);
-        return listMyWorksUseCase.execute(operatorPredicate, basePredicate, pagination);
+        return listMyWorksUseCase.execute(operatorPredicate, basePredicate, pagination, search);
     }
 
     @GetMapping("/{workId}")
