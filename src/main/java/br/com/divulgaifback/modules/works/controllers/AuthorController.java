@@ -6,16 +6,15 @@ import br.com.divulgaifback.modules.users.entities.QAuthor;
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorRequest;
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorResponse;
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorUseCase;
-import br.com.divulgaifback.modules.works.useCases.author.delete.DeleteAuthorUseCase;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsResponse;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsUseCase;
 import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorRequest;
 import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorResponse;
 import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorUseCase;
+import br.com.divulgaifback.modules.works.useCases.author.delete.DeleteAuthorUseCase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,21 +39,6 @@ public class AuthorController extends BaseController {
         return createAuthorUseCase.execute(request);
     }
 
-    @PutMapping("/{authorId}")
-    @ResponseStatus(HttpStatus.OK)
-    public UpdateAuthorResponse update(
-            @PathVariable @Positive Integer authorId,
-            @Valid @RequestBody UpdateAuthorRequest request
-    ) {
-        return updateAuthorUseCase.execute(authorId, request);
-    }
-
-    @DeleteMapping("/{authorId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable @Positive Integer authorId) {
-        deleteAuthorUseCase.execute(authorId);
-    }
-
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
     public Page<ListAuthorsResponse> list(
@@ -64,5 +48,17 @@ public class AuthorController extends BaseController {
     ) {
         BooleanBuilder operatorPredicate = buildOperatorPredicate(params, QAuthor.author);
         return listAuthorsUseCase.execute(operatorPredicate, basePredicate, pagination);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UpdateAuthorResponse update(@PathVariable Integer id, @Valid @RequestBody UpdateAuthorRequest request) {
+        return updateAuthorUseCase.execute(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Integer id) {
+        deleteAuthorUseCase.execute(id);
     }
 }

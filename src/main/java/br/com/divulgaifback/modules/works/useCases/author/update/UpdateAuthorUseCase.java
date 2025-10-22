@@ -23,7 +23,6 @@ public class UpdateAuthorUseCase {
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorId));
 
-        // Verifica se o novo email já está sendo usado por outro autor
         if (!author.getEmail().equals(request.email())) {
             Optional<Author> existingAuthor = authorRepository.findByEmail(request.email());
             if (existingAuthor.isPresent() && !existingAuthor.get().getId().equals(authorId)) {
