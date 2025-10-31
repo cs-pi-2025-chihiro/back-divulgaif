@@ -96,4 +96,9 @@ public class WorkController extends BaseController {
     public void requestChanges(@Valid @RequestBody RequestChangesRequest request, @Valid @Positive @PathVariable Integer workId) {
         this.requestChangesUseCase.execute(request, workId);
     }
+
+    @GetMapping("/get-stats")
+    @ResponseStatus(HttpStatus.OK)
+
+
 }

@@ -9,4 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface WorkRepository extends BaseRepository<Work, Integer> {
     Page<Work> findAll(Predicate predicate, Pageable pageable);
+
+    Long countAllByWorkStatusId(Integer workStatusId);
+
+    @Query("SELECT COUNT()")
+    Long countAllByLabels()
 }
