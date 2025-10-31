@@ -13,5 +13,5 @@ public interface WorkRepository extends BaseRepository<Work, Integer> {
     Long countAllByWorkStatusId(Integer workStatusId);
 
     @Query("SELECT COUNT()")
-    Long countAllByLabels()
+    Long countAllByLabels();
 }
