@@ -5,7 +5,6 @@ import br.com.divulgaifback.modules.works.entities.Work;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
