@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,26 +41,28 @@ public class GetDashboardUseCase {
         Integer statusId = Objects.nonNull(request) ? request.statusId() : null;
         Integer labelId = Objects.nonNull(request) ? request.labelId() : null;
         Integer authorId = Objects.nonNull(request) ? request.authorId() : null;
+        LocalDateTime startDate = Objects.nonNull(request) ? request.startDate() : null;
+        LocalDateTime endDate = Objects.nonNull(request) ? request.endDate() : null;
 
         final String filterStatusName;
         if (Objects.nonNull(statusId)) filterStatusName = WorkStatusEnum.fromId(statusId).name();
         else filterStatusName = WorkStatusEnum.PUBLISHED.name();
 
-        setTotalWorksByStatus(response, statusId);
-        setTotalWorksByLabel(response, labelId, filterStatusName);
-        setTotalWorksByAuthor(response, authorId, filterStatusName);
+        setTotalWorksByStatus(response, statusId, startDate, endDate);
+        setTotalWorksByLabel(response, labelId, filterStatusName, startDate, endDate);
+        setTotalWorksByAuthor(response, authorId, filterStatusName, startDate, endDate);
         return response;
     }
 
-    private void setTotalWorksByStatus(GetDashboardResponse response, Integer statusId) {
+    private void setTotalWorksByStatus(GetDashboardResponse response, Integer statusId, LocalDateTime startDate, LocalDateTime endDate) {
         if (Objects.nonNull(statusId)) {
-            Long totalByStatus = workRepository.countAllByWorkStatusId(statusId);
+            Long totalByStatus = workRepository.countByWorkStatusIdFiltered(statusId, startDate, endDate);
             WorkStatusEnum statusEnum = WorkStatusEnum.fromId(statusId);
             response.setTotalWorksByStatus(List.of(new GetDashboardWorksByStatus(totalByStatus, statusEnum.name())));
             return;
         }
 
-        Map<String, Long> statusCountMap = workRepository.getCountsByStatusGrouped().stream()
+        Map<String, Long> statusCountMap = workRepository.getCountsByStatusGrouped(startDate, endDate).stream()
                 .collect(Collectors.toMap(
                         WorksByStatusProjection::getName,
                         WorksByStatusProjection::getTotal,
@@ -76,16 +79,16 @@ public class GetDashboardUseCase {
         response.setTotalWorksByStatus(worksByStatusList);
     }
 
-    private void setTotalWorksByLabel(GetDashboardResponse response, Integer labelId, String filterStatusName) {
+    private void setTotalWorksByLabel(GetDashboardResponse response, Integer labelId, String filterStatusName, LocalDateTime startDate, LocalDateTime endDate) {
         if (Objects.nonNull(labelId)) {
-            Long totalByLabel = workRepository.countAllByLabelsId(labelId);
+            Long totalByLabel = workRepository.countByLabelIdFiltered(labelId, startDate, endDate);
             Label label = labelRepository.findById(labelId).orElseThrow(() -> NotFoundException.with(Label.class, "labelId", labelId));
             response.setTotalPublishedWorksByLabel(List.of(new GetDashboardWorksByLabel(totalByLabel, label.getName())));
             return;
         }
 
         Pageable topFive = PageRequest.of(0, 5);
-        List<WorksByLabelProjection> projections = workRepository.getCountsByLabelGrouped(filterStatusName, topFive);
+        List<WorksByLabelProjection> projections = workRepository.getCountsByLabelGrouped(filterStatusName, startDate, endDate, topFive);
         List<GetDashboardWorksByLabel> worksByLabelsList = projections.stream()
                 .map(proj -> new GetDashboardWorksByLabel(proj.getTotal(), proj.getName()))
                 .toList();
@@ -93,16 +96,16 @@ public class GetDashboardUseCase {
         response.setTotalPublishedWorksByLabel(worksByLabelsList);
     }
 
-    private void setTotalWorksByAuthor(GetDashboardResponse response, Integer authorId, String filterStatusName) {
+    private void setTotalWorksByAuthor(GetDashboardResponse response, Integer authorId, String filterStatusName, LocalDateTime startDate, LocalDateTime endDate) {
         if (Objects.nonNull(authorId)) {
+            Long totalByAuthor = workRepository.countByAuthorIdFiltered(authorId, startDate, endDate);
             Author author = authorRepository.findById(authorId).orElseThrow(() -> NotFoundException.with(Author.class, "authorId", authorId));
-            Long totalByAuthor = workRepository.countAllByAuthorsId(authorId);
             response.setTotalPublishedWorksByAuthor(List.of(new GetDashboardWorksByAuthor(totalByAuthor, author.getName())));
             return;
         }
 
         Pageable topFive = PageRequest.of(0, 5);
-        List<WorksByAuthorProjection> projections = workRepository.getCountsByAuthorGrouped(filterStatusName, topFive);
+        List<WorksByAuthorProjection> projections = workRepository.getCountsByAuthorGrouped(filterStatusName, startDate, endDate, topFive);
         List<GetDashboardWorksByAuthor> worksByAuthorsList = projections.stream()
                 .map(proj -> new GetDashboardWorksByAuthor(proj.getTotal(), proj.getName()))
                 .toList();
