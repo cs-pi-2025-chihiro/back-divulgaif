@@ -2,8 +2,12 @@ package br.com.divulgaifback.modules.works.useCases.dashboard.get;
 
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.users.entities.Author;
+import br.com.divulgaifback.modules.users.entities.QAuthor;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.works.entities.Label;
+import br.com.divulgaifback.modules.works.entities.QLabel;
+import br.com.divulgaifback.modules.works.entities.QWork;
+import br.com.divulgaifback.modules.works.entities.QWorkStatus;
 import br.com.divulgaifback.modules.works.repositories.LabelRepository;
 import br.com.divulgaifback.modules.works.useCases.dashboard.get.GetDashboardResponse.GetDashboardWorksByStatus;
 import br.com.divulgaifback.modules.works.useCases.dashboard.get.GetDashboardResponse.GetDashboardWorksByLabel;
@@ -13,9 +17,12 @@ import br.com.divulgaifback.modules.works.repositories.WorkRepository;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository.WorksByStatusProjection;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository.WorksByLabelProjection;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository.WorksByAuthorProjection;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +41,16 @@ public class GetDashboardUseCase {
     private final LabelRepository labelRepository;
     private final AuthorRepository authorRepository;
 
+    private final JPAQueryFactory queryFactory;
+
+    private static final QWork work = QWork.work;
+    private static final QWorkStatus workStatus = QWorkStatus.workStatus;
+    private static final QLabel label = QLabel.label;
+    private static final QAuthor author = QAuthor.author;
+
+    private static final String PUBLISHED_STATUS = WorkStatusEnum.PUBLISHED.name();
+
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     @Transactional(readOnly = true)
     public GetDashboardResponse execute(GetDashboardRequest request) {
         GetDashboardResponse response = new GetDashboardResponse();
@@ -44,33 +61,41 @@ public class GetDashboardUseCase {
         LocalDateTime startDate = Objects.nonNull(request) ? request.startDate() : null;
         LocalDateTime endDate = Objects.nonNull(request) ? request.endDate() : null;
 
-        final String filterStatusName;
-        if (Objects.nonNull(statusId)) filterStatusName = WorkStatusEnum.fromId(statusId).name();
-        else filterStatusName = WorkStatusEnum.PUBLISHED.name();
-
         setTotalWorksByStatus(response, statusId, startDate, endDate);
-        setTotalWorksByLabel(response, labelId, filterStatusName, startDate, endDate);
-        setTotalWorksByAuthor(response, authorId, filterStatusName, startDate, endDate);
+        setTotalWorksByLabel(response, labelId, startDate, endDate);
+        setTotalWorksByAuthor(response, authorId, startDate, endDate);
         return response;
     }
 
     private void setTotalWorksByStatus(GetDashboardResponse response, Integer statusId, LocalDateTime startDate, LocalDateTime endDate) {
-        if (Objects.nonNull(statusId)) {
-            Long totalByStatus = workRepository.countByWorkStatusIdFiltered(statusId, startDate, endDate);
-            WorkStatusEnum statusEnum = WorkStatusEnum.fromId(statusId);
-            response.setTotalWorksByStatus(List.of(new GetDashboardWorksByStatus(totalByStatus, statusEnum.name())));
-            return;
-        }
 
-        Map<String, Long> statusCountMap = workRepository.getCountsByStatusGrouped(startDate, endDate).stream()
+        var query = queryFactory
+                .select(Projections.constructor(GetDashboardWorksByStatus.class,
+                        work.count(),
+                        workStatus.name))
+                .from(work)
+                .join(work.workStatus, workStatus);
+
+
+        if (Objects.nonNull(statusId)) query.where(workStatus.id.eq(statusId));
+
+        if (Objects.nonNull(startDate)) query.where(work.createdAt.goe(startDate));
+
+        if (Objects.nonNull(endDate)) query.where(work.createdAt.loe(endDate));
+
+        List<GetDashboardWorksByStatus> results = query.groupBy(workStatus.id, workStatus.name).fetch();
+
+        Map<String, Long> statusCountMap = results.stream()
                 .collect(Collectors.toMap(
-                        WorksByStatusProjection::getName,
-                        WorksByStatusProjection::getTotal,
-                        Long::sum
+                        GetDashboardWorksByStatus::getStatus,
+                        GetDashboardWorksByStatus::getTotal
                 ));
 
         List<GetDashboardWorksByStatus> worksByStatusList = new ArrayList<>();
-        List<WorkStatusEnum> allStatus = List.of(WorkStatusEnum.values());
+
+        List<WorkStatusEnum> allStatus = (Objects.nonNull(statusId))
+                ? List.of(WorkStatusEnum.fromId(statusId))
+                : List.of(WorkStatusEnum.values());
 
         for (WorkStatusEnum status : allStatus) {
             Long totalByStatus = statusCountMap.getOrDefault(status.name(), 0L);
@@ -79,37 +104,66 @@ public class GetDashboardUseCase {
         response.setTotalWorksByStatus(worksByStatusList);
     }
 
-    private void setTotalWorksByLabel(GetDashboardResponse response, Integer labelId, String filterStatusName, LocalDateTime startDate, LocalDateTime endDate) {
-        if (Objects.nonNull(labelId)) {
-            Long totalByLabel = workRepository.countByLabelIdFiltered(labelId, startDate, endDate);
-            Label label = labelRepository.findById(labelId).orElseThrow(() -> NotFoundException.with(Label.class, "labelId", labelId));
-            response.setTotalPublishedWorksByLabel(List.of(new GetDashboardWorksByLabel(totalByLabel, label.getName())));
+    private void setTotalWorksByLabel(GetDashboardResponse response, Integer labelId, LocalDateTime startDate, LocalDateTime endDate) {
+        Pageable topFive = PageRequest.of(0, 5);
+
+        var query = queryFactory
+                .select(Projections.constructor(GetDashboardWorksByLabel.class,
+                        work.count(),
+                        label.name))
+                .from(work)
+                .join(work.labels, label)
+                .join(work.workStatus, workStatus)
+                .where(workStatus.name.eq(PUBLISHED_STATUS));
+
+        if (Objects.nonNull(labelId)) query.where(label.id.eq(labelId));
+        if (Objects.nonNull(startDate)) query.where(work.createdAt.goe(startDate));
+        if (Objects.nonNull(endDate)) query.where(work.createdAt.loe(endDate));
+
+        query.groupBy(label.id, label.name).orderBy(work.count().desc());
+
+        if (Objects.isNull(labelId)) query.limit(topFive.getPageSize()).offset(topFive.getOffset());
+
+        List<GetDashboardWorksByLabel> results = query.fetch();
+
+        if (Objects.nonNull(labelId) && results.isEmpty()) {
+            Label l = labelRepository.findById(labelId)
+                    .orElseThrow(() -> NotFoundException.with(Label.class, "labelId", labelId));
+            response.setTotalPublishedWorksByLabel(List.of(new GetDashboardWorksByLabel(0L, l.getName())));
             return;
         }
 
-        Pageable topFive = PageRequest.of(0, 5);
-        List<WorksByLabelProjection> projections = workRepository.getCountsByLabelGrouped(filterStatusName, startDate, endDate, topFive);
-        List<GetDashboardWorksByLabel> worksByLabelsList = projections.stream()
-                .map(proj -> new GetDashboardWorksByLabel(proj.getTotal(), proj.getName()))
-                .toList();
-
-        response.setTotalPublishedWorksByLabel(worksByLabelsList);
+        response.setTotalPublishedWorksByLabel(results);
     }
 
-    private void setTotalWorksByAuthor(GetDashboardResponse response, Integer authorId, String filterStatusName, LocalDateTime startDate, LocalDateTime endDate) {
-        if (Objects.nonNull(authorId)) {
-            Long totalByAuthor = workRepository.countByAuthorIdFiltered(authorId, startDate, endDate);
-            Author author = authorRepository.findById(authorId).orElseThrow(() -> NotFoundException.with(Author.class, "authorId", authorId));
-            response.setTotalPublishedWorksByAuthor(List.of(new GetDashboardWorksByAuthor(totalByAuthor, author.getName())));
+    private void setTotalWorksByAuthor(GetDashboardResponse response, Integer authorId, LocalDateTime startDate, LocalDateTime endDate) {
+        Pageable topFive = PageRequest.of(0, 5);
+
+        var query = queryFactory
+                .select(Projections.constructor(GetDashboardWorksByAuthor.class,
+                        work.count(),
+                        author.name))
+                .from(work)
+                .join(work.authors, author)
+                .join(work.workStatus, workStatus)
+                .where(workStatus.name.eq(PUBLISHED_STATUS));
+
+        if (Objects.nonNull(authorId)) query.where(author.id.eq(authorId));
+        if (Objects.nonNull(startDate)) query.where(work.createdAt.goe(startDate));
+        if (Objects.nonNull(endDate)) query.where(work.createdAt.loe(endDate));
+
+        query.groupBy(author.id, author.name).orderBy(work.count().desc());
+
+        if (Objects.isNull(authorId)) query.limit(topFive.getPageSize()).offset(topFive.getOffset());
+
+        List<GetDashboardWorksByAuthor> results = query.fetch();
+
+        if (Objects.nonNull(authorId) && results.isEmpty()) {
+            Author a = authorRepository.findById(authorId).orElseThrow(() -> NotFoundException.with(Author.class, "authorId", authorId));
+            response.setTotalPublishedWorksByAuthor(List.of(new GetDashboardWorksByAuthor(0L, a.getName())));
             return;
         }
 
-        Pageable topFive = PageRequest.of(0, 5);
-        List<WorksByAuthorProjection> projections = workRepository.getCountsByAuthorGrouped(filterStatusName, startDate, endDate, topFive);
-        List<GetDashboardWorksByAuthor> worksByAuthorsList = projections.stream()
-                .map(proj -> new GetDashboardWorksByAuthor(proj.getTotal(), proj.getName()))
-                .toList();
-
-        response.setTotalPublishedWorksByAuthor(worksByAuthorsList);
+        response.setTotalPublishedWorksByAuthor(results);
     }
 }

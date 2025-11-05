@@ -21,7 +21,7 @@ public class LinkUserRoleUseCase {
     private final RoleRepository roleRepository;
 
     @Transactional
-    @Secured("IS_ADMIN")
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     public void execute(LinkUserRoleRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> NotFoundException.with(User.class, "id", request.userId()));

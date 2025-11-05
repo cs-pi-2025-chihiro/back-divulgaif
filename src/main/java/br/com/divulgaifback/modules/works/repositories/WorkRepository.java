@@ -19,24 +19,32 @@ public interface WorkRepository extends BaseRepository<Work, Integer> {
                                      @Param("startDate") LocalDateTime startDate,
                                      @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(w) FROM Work w JOIN w.labels l " +
-            "WHERE l.id = :labelId " +
+    @Query("SELECT COUNT(w) FROM Work w " +
+            "JOIN w.labels l " +
+            "JOIN w.workStatus ws " +
+            "WHERE ws.name = :statusName " +
+            "AND l.id = :labelId " +
             "AND (:startDate IS NULL OR w.createdAt >= :startDate) " +
             "AND (:endDate IS NULL OR w.createdAt <= :endDate)")
     long countByLabelIdFiltered(@Param("labelId") Integer labelId,
                                 @Param("startDate") LocalDateTime startDate,
-                                @Param("endDate") LocalDateTime endDate);
+                                @Param("endDate") LocalDateTime endDate,
+                                @Param("statusName") String statusName);
 
     @Query("SELECT COUNT(w) FROM Work w JOIN w.authors a " +
-            "WHERE a.id = :authorId " +
+            "JOIN w.workStatus ws " +
+            "WHERE ws.name = :statusName " +
+            "AND a.id = :authorId " +
             "AND (:startDate IS NULL OR w.createdAt >= :startDate) " +
             "AND (:endDate IS NULL OR w.createdAt <= :endDate)")
     long countByAuthorIdFiltered(@Param("authorId") Integer authorId,
                                  @Param("startDate") LocalDateTime startDate,
-                                 @Param("endDate") LocalDateTime endDate);
+                                 @Param("endDate") LocalDateTime endDate,
+                                 @Param("statusName") String statusName);
 
     @Query("SELECT COUNT(w) as total, s.name as name " +
-            "FROM Work w JOIN w.workStatus s " +
+            "FROM Work w " +
+            "JOIN w.workStatus s " +
             "WHERE (:startDate IS NULL OR w.createdAt >= :startDate) " +
             "AND (:endDate IS NULL OR w.createdAt <= :endDate) " +
             "GROUP BY s.id, s.name")
