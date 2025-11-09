@@ -72,7 +72,7 @@ public class UpdateWorkUseCase {
         boolean isTeacherOrAdmin = currentUser.hasRole(RoleEnum.IS_TEACHER.getValue())
                 || currentUser.hasRole(RoleEnum.IS_ADMIN.getValue());
 
-        if (isPublishingRejectingOrRequestingChanges && !isTeacherOrAdmin) throw new ForbiddenException("{editwork.statusvalidation.forbidden}");
+        if (isPublishingRejectingOrRequestingChanges && !isTeacherOrAdmin) throw new ForbiddenException();
 
         String finalWorkStatus = workStatus;
         WorkStatus status = workStatusRepository.findByName(workStatus).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", finalWorkStatus));

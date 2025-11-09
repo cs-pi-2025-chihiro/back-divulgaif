@@ -22,9 +22,18 @@ public interface AuthorRepository extends BaseRepository<Author, Integer> {
     @Query("UPDATE Author a SET a.user = :userId WHERE a.id = :id")
     void updateAuthorsUserId(int id, int userId);
 
-    @Query("SELECT COUNT(a.id) FROM Author a WHERE a.user IS NOT NULL")
-    long countAllByUserExists();
+    @Query("SELECT COUNT(a.id) " +
+            "FROM Author a " +
+            "JOIN Work w ON a MEMBER OF w.authors " +
+            "WHERE a.user IS NOT NULL " +
+            "AND w.workStatus.name = :workStatusName")
+    long countAllByUserExists(String workStatusName);
 
-    @Query("SELECT a FROM Author a GROUP BY a.id ORDER BY COUNT(a.user) DESC")
-    Page<Author> findMostCited(Pageable pageable);
+    @Query("SELECT a " +
+            "FROM Author a " +
+            "JOIN Work w ON a MEMBER OF w.authors " +
+            "WHERE w.workStatus.name = :workStatusName " +
+            "GROUP BY a.id " +
+            "ORDER BY COUNT(a.user) DESC")
+    Page<Author> findMostCited(Pageable pageable, String workStatusName);
 }
