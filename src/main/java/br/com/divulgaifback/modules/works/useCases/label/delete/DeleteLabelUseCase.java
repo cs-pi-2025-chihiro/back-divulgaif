@@ -15,7 +15,7 @@ public class DeleteLabelUseCase {
     private final LabelRepository labelRepository;
 
     @Transactional
-    @Secured("IS_ADMIN")
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     public void execute(Long id) {
         Label label = labelRepository.findById(id.intValue())
                 .orElseThrow(() -> new NotFoundException("Label not found"));

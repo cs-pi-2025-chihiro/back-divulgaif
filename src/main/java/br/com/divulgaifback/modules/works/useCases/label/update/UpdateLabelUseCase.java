@@ -16,7 +16,7 @@ public class UpdateLabelUseCase {
     private final LabelRepository labelRepository;
 
     @Transactional
-    @Secured("IS_ADMIN")
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     public void execute(Long id, UpdateLabelRequest request) {
         Label label = labelRepository.findById(id.intValue())
                 .orElseThrow(() -> new NotFoundException("Label not found"));
