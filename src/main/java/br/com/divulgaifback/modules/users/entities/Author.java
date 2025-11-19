@@ -16,6 +16,7 @@ import org.hibernate.annotations.SQLRestriction;
 import java.util.HashSet;
 import java.util.Set;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,4 +43,5 @@ public class Author extends BaseEntity {
 
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
     private Set<Work> works = new HashSet<>();
+
 }

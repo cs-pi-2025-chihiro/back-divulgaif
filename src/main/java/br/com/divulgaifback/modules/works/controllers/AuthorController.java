@@ -8,6 +8,10 @@ import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorRes
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorUseCase;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsResponse;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsUseCase;
+import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorRequest;
+import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorResponse;
+import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorUseCase;
+import br.com.divulgaifback.modules.works.useCases.author.delete.DeleteAuthorUseCase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import jakarta.validation.Valid;
@@ -26,6 +30,8 @@ import java.util.Map;
 public class AuthorController extends BaseController {
     private final ListAuthorsUseCase listAuthorsUseCase;
     private final CreateAuthorUseCase createAuthorUseCase;
+    private final UpdateAuthorUseCase updateAuthorUseCase;
+    private final DeleteAuthorUseCase deleteAuthorUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -42,5 +48,17 @@ public class AuthorController extends BaseController {
     ) {
         BooleanBuilder operatorPredicate = buildOperatorPredicate(params, QAuthor.author);
         return listAuthorsUseCase.execute(operatorPredicate, basePredicate, pagination);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UpdateAuthorResponse update(@PathVariable Integer id, @Valid @RequestBody UpdateAuthorRequest request) {
+        return updateAuthorUseCase.execute(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Integer id) {
+        deleteAuthorUseCase.execute(id);
     }
 }
