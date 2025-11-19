@@ -104,7 +104,7 @@ public class UpdateWorkUseCase {
         if (!workContainsAuthorEmail(work, author.getEmail())) {
             work.addAuthor(author);
         }
-    }
+   }
 
     private void handleNonDivulgaIfUsers(Work work, List<AuthorRequest> newAuthors) {
         if (Objects.isNull(newAuthors) || newAuthors.isEmpty()) return;

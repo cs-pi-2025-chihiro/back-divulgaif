@@ -4,6 +4,7 @@ import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelRequest;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelResponse;
+import br.com.divulgaifback.modules.works.useCases.label.update.UpdateLabelRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -79,5 +80,38 @@ public class LabelControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testUpdateLabel() {
+        HttpHeaders headers = getAuthenticatedHeaders();
+        UpdateLabelRequest updateLabelRequest = new UpdateLabelRequest("Label Atualizada");
+        HttpEntity<UpdateLabelRequest> requestEntity = new HttpEntity<>(updateLabelRequest, headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                getBaseUrl() + "/labels/1",
+                HttpMethod.PUT,
+                requestEntity,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @Sql("/test-data/setup.sql")
+    void testDeleteLabel() {
+        HttpHeaders headers = getAuthenticatedHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                getBaseUrl() + "/labels/1",
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+        );
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 }
