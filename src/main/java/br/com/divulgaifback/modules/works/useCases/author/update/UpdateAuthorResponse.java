@@ -1,17 +1,24 @@
 package br.com.divulgaifback.modules.works.useCases.author.update;
 
-import lombok.Builder;
+import br.com.divulgaifback.modules.users.entities.Author;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Data
-@Builder
+@Component
 public class UpdateAuthorResponse {
-    private String id;
-    private String name;
-    private String email;
-    private String type;
+    public Integer id;
+    public String name;
+    public String email;
+    public String type;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public UpdateAuthorResponse toPresentation(Author author) {
+        return modelMapper.map(author, UpdateAuthorResponse.class);
+    }
 }
 

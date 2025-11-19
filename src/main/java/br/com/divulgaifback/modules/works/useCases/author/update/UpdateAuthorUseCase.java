@@ -17,8 +17,8 @@ public class UpdateAuthorUseCase {
     private final AuthorRepository authorRepository;
     private final UpdateAuthorResponse updateAuthorResponse;
 
-    @Secured("IS_ADMIN")
     @Transactional
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     public UpdateAuthorResponse execute(Integer authorId, UpdateAuthorRequest request) {
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorId));
