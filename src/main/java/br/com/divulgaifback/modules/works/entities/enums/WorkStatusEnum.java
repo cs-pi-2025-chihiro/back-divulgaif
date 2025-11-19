@@ -16,4 +16,13 @@ public enum WorkStatusEnum {
     public Integer getId() {
         return id;
     }
+
+    public static WorkStatusEnum fromId(Integer id) {
+        for (WorkStatusEnum status : WorkStatusEnum.values()) {
+            if (status.getId().equals(id)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Invalid WorkStatusEnum id: " + id);
+    }
 }
