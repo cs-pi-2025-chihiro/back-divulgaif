@@ -7,6 +7,7 @@ import br.com.divulgaifback.modules.works.repositories.LabelRepository;
 import br.com.divulgaifback.modules.works.repositories.WorkRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +19,16 @@ public class CreateLabelUseCase {
     private final CreateLabelResponse createLabelResponse;
 
     @Transactional
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     public CreateLabelResponse execute(CreateLabelRequest request) {
         Label label = CreateLabelRequest.toDomain(request);
-        Work work = workRepository.findById(request.workId()).orElseThrow(() -> NotFoundException.with(Work.class, "id", request.workId()));
-        label.getWorks().add(work);
+        
+        if (request.workId() != null) {
+            Work work = workRepository.findById(request.workId())
+                .orElseThrow(() -> NotFoundException.with(Work.class, "id", request.workId()));
+            label.getWorks().add(work);
+        }
+        
         Label savedLabel = labelRepository.save(label);
         return createLabelResponse.toPresentation(savedLabel);
     }

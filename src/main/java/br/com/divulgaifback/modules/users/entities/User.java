@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -21,6 +23,7 @@ import java.util.Set;
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class User extends BaseEntity {
     private static final int MAXIMUM_BIO_VALUE = 500;
 
@@ -72,6 +75,7 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Role> roles = new HashSet<>();
 
     public boolean hasRole(String roleName) {
