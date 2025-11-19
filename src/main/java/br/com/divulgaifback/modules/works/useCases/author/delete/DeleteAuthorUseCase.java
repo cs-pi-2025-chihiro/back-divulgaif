@@ -19,7 +19,6 @@ public class DeleteAuthorUseCase {
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> NotFoundException.with(Author.class, "id", authorId));
         
-        // O soft delete é realizado automaticamente pela anotação @SQLDelete na entidade
         authorRepository.delete(author);
     }
 }

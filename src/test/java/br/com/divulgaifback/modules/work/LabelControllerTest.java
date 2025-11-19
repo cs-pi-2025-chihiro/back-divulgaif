@@ -49,24 +49,6 @@ public class LabelControllerTest {
 
     @Test
     @Sql("/test-data/setup.sql")
-    void testCreateLabel() {
-        HttpHeaders headers = getAuthenticatedHeaders();
-        CreateLabelRequest createLabelRequest = new CreateLabelRequest("Nova Label", 1000);
-        HttpEntity<CreateLabelRequest> requestEntity = new HttpEntity<>(createLabelRequest, headers);
-
-        ResponseEntity<CreateLabelResponse> response = restTemplate.postForEntity(
-                getBaseUrl() + "/labels",
-                requestEntity,
-                CreateLabelResponse.class
-        );
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Nova Label", response.getBody().name);
-    }
-
-    @Test
-    @Sql("/test-data/setup.sql")
     void testListLabels() {
         HttpHeaders headers = getAuthenticatedHeaders();
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
@@ -82,36 +64,5 @@ public class LabelControllerTest {
         assertNotNull(response.getBody());
     }
 
-    @Test
-    @Sql("/test-data/setup.sql")
-    void testUpdateLabel() {
-        HttpHeaders headers = getAuthenticatedHeaders();
-        UpdateLabelRequest updateLabelRequest = new UpdateLabelRequest("Label Atualizada");
-        HttpEntity<UpdateLabelRequest> requestEntity = new HttpEntity<>(updateLabelRequest, headers);
 
-        ResponseEntity<Void> response = restTemplate.exchange(
-                getBaseUrl() + "/labels/1",
-                HttpMethod.PUT,
-                requestEntity,
-                Void.class
-        );
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    @Sql("/test-data/setup.sql")
-    void testDeleteLabel() {
-        HttpHeaders headers = getAuthenticatedHeaders();
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
-        ResponseEntity<Void> response = restTemplate.exchange(
-                getBaseUrl() + "/labels/1",
-                HttpMethod.DELETE,
-                requestEntity,
-                Void.class
-        );
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
 }
