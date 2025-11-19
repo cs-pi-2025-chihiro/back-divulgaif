@@ -2,13 +2,16 @@ package br.com.divulgaifback.modules.works.useCases.work.create;
 
 import br.com.divulgaifback.common.constants.AuthorConstants;
 import br.com.divulgaifback.common.constants.WorkConstants;
+import br.com.divulgaifback.common.exceptions.custom.ForbiddenException;
 import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.modules.auth.services.AuthService;
 import br.com.divulgaifback.modules.users.entities.Author;
 import br.com.divulgaifback.modules.users.entities.User;
+import br.com.divulgaifback.modules.users.entities.enums.RoleEnum;
 import br.com.divulgaifback.modules.users.repositories.AuthorRepository;
 import br.com.divulgaifback.modules.users.repositories.UserRepository;
 import br.com.divulgaifback.modules.works.entities.*;
+import br.com.divulgaifback.modules.works.entities.enums.WorkStatusEnum;
 import br.com.divulgaifback.modules.works.repositories.*;
 import br.com.divulgaifback.modules.works.useCases.work.create.CreateWorkRequest.*;
 import com.querydsl.core.util.StringUtils;
@@ -47,6 +50,19 @@ public class CreateWorkUseCase {
 
     private void addStatus(Work work, String workStatus) {
         String statusName = StringUtils.isNullOrEmpty(workStatus) ? WorkConstants.DRAFT_STATUS : workStatus;
+
+        boolean isRestrictedStatus = (statusName.equals(WorkStatusEnum.PUBLISHED.name())
+                || statusName.equals(WorkStatusEnum.REJECTED.name())
+                || statusName.equals(WorkStatusEnum.PENDING_CHANGES.name()));
+
+        if (isRestrictedStatus) {
+            User currentUser = AuthService.getUserFromToken();
+            boolean isTeacherOrAdmin = currentUser.hasRole(RoleEnum.IS_TEACHER.getValue())
+                    || currentUser.hasRole(RoleEnum.IS_ADMIN.getValue());
+            if (!isTeacherOrAdmin) throw new ForbiddenException();
+
+        }
+
         WorkStatus status = workStatusRepository.findByName(statusName).orElseThrow(() -> NotFoundException.with(WorkStatus.class, "name", statusName));
         work.setWorkStatus(status);
     }

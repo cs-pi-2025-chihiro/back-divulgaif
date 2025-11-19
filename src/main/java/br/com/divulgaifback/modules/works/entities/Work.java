@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -24,6 +26,7 @@ import lombok.Setter;
 @Table(name = "works")
 @SQLDelete(sql = "UPDATE works SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Work extends BaseEntity {
 
     @Column(name = "title", nullable = false)
@@ -68,6 +71,7 @@ public class Work extends BaseEntity {
             joinColumns = @JoinColumn(name = "work_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Author> authors = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -76,6 +80,7 @@ public class Work extends BaseEntity {
             joinColumns = @JoinColumn(name = "work_id"),
             inverseJoinColumns = @JoinColumn(name = "label_id")
     )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Label> labels = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -84,6 +89,7 @@ public class Work extends BaseEntity {
             joinColumns = @JoinColumn(name = "work_id"),
             inverseJoinColumns = @JoinColumn(name = "link_id")
     )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Link> links = new HashSet<>();
 
     @OneToMany(mappedBy = "work", cascade = CascadeType.ALL, orphanRemoval = true)

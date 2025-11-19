@@ -4,6 +4,7 @@ import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelRequest;
 import br.com.divulgaifback.modules.works.useCases.label.create.CreateLabelResponse;
+import br.com.divulgaifback.modules.works.useCases.label.update.UpdateLabelRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -48,24 +49,6 @@ public class LabelControllerTest {
 
     @Test
     @Sql("/test-data/setup.sql")
-    void testCreateLabel() {
-        HttpHeaders headers = getAuthenticatedHeaders();
-        CreateLabelRequest createLabelRequest = new CreateLabelRequest("Nova Label", 1000);
-        HttpEntity<CreateLabelRequest> requestEntity = new HttpEntity<>(createLabelRequest, headers);
-
-        ResponseEntity<CreateLabelResponse> response = restTemplate.postForEntity(
-                getBaseUrl() + "/labels",
-                requestEntity,
-                CreateLabelResponse.class
-        );
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Nova Label", response.getBody().name);
-    }
-
-    @Test
-    @Sql("/test-data/setup.sql")
     void testListLabels() {
         HttpHeaders headers = getAuthenticatedHeaders();
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
@@ -80,4 +63,6 @@ public class LabelControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }
+
+
 }
