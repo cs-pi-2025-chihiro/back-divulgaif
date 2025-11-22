@@ -6,6 +6,7 @@ import br.com.divulgaifback.modules.users.entities.QAuthor;
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorRequest;
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorResponse;
 import br.com.divulgaifback.modules.works.useCases.author.create.CreateAuthorUseCase;
+import br.com.divulgaifback.modules.works.useCases.author.getAll.GetAllAuthorsUseCase;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsResponse;
 import br.com.divulgaifback.modules.works.useCases.author.list.ListAuthorsUseCase;
 import br.com.divulgaifback.modules.works.useCases.author.update.UpdateAuthorRequest;
@@ -29,6 +30,7 @@ import java.util.Map;
 @RequestMapping("/authors")
 public class AuthorController extends BaseController {
     private final ListAuthorsUseCase listAuthorsUseCase;
+    private final GetAllAuthorsUseCase getAllAuthorsUseCase;
     private final CreateAuthorUseCase createAuthorUseCase;
     private final UpdateAuthorUseCase updateAuthorUseCase;
     private final DeleteAuthorUseCase deleteAuthorUseCase;
@@ -37,6 +39,17 @@ public class AuthorController extends BaseController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateAuthorResponse create(@Valid @RequestBody CreateAuthorRequest request) {
         return createAuthorUseCase.execute(request);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public Page<ListAuthorsResponse> getAll(
+            @RequestParam Map<String, String> params,
+            @QuerydslPredicate(root = Author.class) Predicate basePredicate,
+            Pageable pagination
+    ) {
+        BooleanBuilder operatorPredicate = buildOperatorPredicate(params, QAuthor.author);
+        return getAllAuthorsUseCase.execute(operatorPredicate, basePredicate, pagination);
     }
 
     @GetMapping("/list")
