@@ -87,6 +87,6 @@ public class CreateUserUseCase {
 
         if (author.isEmpty()) return;
 
-        authorRepository.updateAuthorsUserId(author.get().getId(), user.getId());
+        authorRepository.updateAuthorsUserId(author.get().getId(), user);
     }
 }
