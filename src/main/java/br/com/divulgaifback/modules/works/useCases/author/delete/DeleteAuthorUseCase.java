@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteAuthorUseCase {
     private final AuthorRepository authorRepository;
 
-    @Secured("IS_ADMIN")
+    @Secured({"IS_ADMIN", "IS_TEACHER"})
     @Transactional
     public void execute(Integer authorId) {
         Author author = authorRepository.findById(authorId)
