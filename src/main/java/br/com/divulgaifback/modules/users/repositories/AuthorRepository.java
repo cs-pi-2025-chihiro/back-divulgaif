@@ -19,8 +19,8 @@ public interface AuthorRepository extends BaseRepository<Author, Integer> {
     Optional<User> findUserIdById(int id);
 
     @Modifying
-    @Query("UPDATE Author a SET a.user = :userId WHERE a.id = :id")
-    void updateAuthorsUserId(int id, int userId);
+    @Query("UPDATE Author a SET a.user = :user WHERE a.id = :id")
+    void updateAuthorsUserId(int id, User user);
 
     @Query("SELECT COUNT(a.id) " +
             "FROM Author a " +
