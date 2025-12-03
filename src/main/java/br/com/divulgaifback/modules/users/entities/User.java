@@ -66,6 +66,9 @@ public class User extends BaseEntity {
     @Column(name = "forgot_password_token")
     private String forgotPasswordToken;
 
+    @Column(name = "forgot_password_token_expires_at")
+    private LocalDateTime forgotPasswordTokenExpiresAt;
+
     @Column(name = "user_type")
     private String userType;
 
