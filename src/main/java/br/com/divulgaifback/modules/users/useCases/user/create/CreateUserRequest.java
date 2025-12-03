@@ -9,7 +9,7 @@ public record CreateUserRequest(
         @NotBlank(message = "{createuser.name.required}") String name,
         @Email @NotBlank(message = "{createuser.email.required}") String email,
         @Email String secondaryEmail,
-        @NotBlank(message = "{createuser.ra.required}") String ra,
+        String ra,
         @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "{createuser.cpf.pattern}")
         String cpf,
         String bio,

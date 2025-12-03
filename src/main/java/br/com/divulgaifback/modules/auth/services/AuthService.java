@@ -1,13 +1,21 @@
 package br.com.divulgaifback.modules.auth.services;
 
+import br.com.divulgaifback.common.exceptions.custom.EmailException;
+import br.com.divulgaifback.common.exceptions.custom.NotFoundException;
 import br.com.divulgaifback.common.exceptions.custom.SuapException;
 import br.com.divulgaifback.common.exceptions.custom.UnauthorizedException;
+import br.com.divulgaifback.common.exceptions.custom.ValidationException;
+import br.com.divulgaifback.common.services.EmailService;
 import br.com.divulgaifback.modules.auth.entities.AuthenticatedUser;
+import br.com.divulgaifback.modules.auth.useCases.forgotPassword.ForgotPasswordRequest;
+import br.com.divulgaifback.modules.auth.useCases.forgotPassword.ForgotPasswordResponse;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.login.LoginResponse;
 import br.com.divulgaifback.modules.auth.useCases.oauthLogin.OauthLoginRequest;
 import br.com.divulgaifback.modules.auth.useCases.refresh.RefreshRequest;
 import br.com.divulgaifback.modules.auth.useCases.refresh.RefreshResponse;
+import br.com.divulgaifback.modules.auth.useCases.resetPassword.ResetPasswordRequest;
+import br.com.divulgaifback.modules.auth.useCases.resetPassword.ResetPasswordResponse;
 import br.com.divulgaifback.modules.users.entities.Role;
 import br.com.divulgaifback.modules.users.entities.User;
 import br.com.divulgaifback.modules.users.repositories.UserRepository;
@@ -23,10 +31,15 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -39,6 +52,10 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RefreshResponse refreshTokenResponse;
+    private final PasswordEncoder passwordEncoder;
+    private final ForgotPasswordResponse forgotPasswordResponse;
+    private final ResetPasswordResponse resetPasswordResponse;
+    private final EmailService emailService;
 
     @Value("${auth.jwt.suap-token.secret}")
     private String SUAP_PROVIDER;
@@ -48,6 +65,9 @@ public class AuthService {
 
     @Value("${auth.jwt.refresh-token.expiration}")
     private Integer refreshTokenExpirationTime;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     public LoginResponse login(LoginRequest loginRequest) {
         try {
@@ -92,13 +112,9 @@ public class AuthService {
     public RefreshResponse refresh(RefreshRequest refreshTokenRequest) {
         DecodedJWT decodedJWT = this.jwtService.decodeAndValidateToken(refreshTokenRequest.refreshToken());
 
-        if (this.jwtService.isTokenExpired(decodedJWT)) {
-            throw new UnauthorizedException();
-        }
+        if (this.jwtService.isTokenExpired(decodedJWT)) throw new UnauthorizedException();
 
-        if (!this.jwtService.isRefreshToken(decodedJWT)) {
-            throw new UnauthorizedException();
-        }
+        if (!this.jwtService.isRefreshToken(decodedJWT)) throw new UnauthorizedException();
 
         Integer userId = Integer.parseInt(decodedJWT.getSubject());
         User user = this.userRepository.findById(userId).orElseThrow(UnauthorizedException::new);
@@ -126,5 +142,58 @@ public class AuthService {
         }
 
         return authenticatedUser.getUser();
+    }
+
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request, Locale locale) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> NotFoundException.with(User.class, "email", request.email()));
+
+        String token = Base64.getUrlEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(10);
+
+        user.setForgotPasswordToken(token);
+        user.setForgotPasswordTokenExpiresAt(expiresAt);
+        userRepository.save(user);
+
+        String languagePath = "";
+        String resetRoute = "reset-password";
+
+        if (Objects.isNull(locale)) locale = Locale.ENGLISH;
+        String language = locale.getLanguage();
+
+        if ("pt".equalsIgnoreCase(language)) {
+            languagePath = "/pt";
+            resetRoute = "alterar-senha";
+        } else if ("en".equalsIgnoreCase(language)) languagePath = "/en";
+
+        try {
+            String resetLink = frontendUrl + languagePath + "/" + resetRoute + "?token=" + token;
+            String userName = user.getName() != null ? user.getName() :
+                ("pt".equalsIgnoreCase(language) ? "Usuário" : "User");
+
+            emailService.sendPasswordResetEmail(user.getEmail(), userName, resetLink, language);
+        } catch (Exception e) {
+            log.error("Error sending password reset email to {}: {}", user.getEmail(), e.getMessage());
+            throw new EmailException("Failed to send password reset email");
+        }
+
+        return forgotPasswordResponse.toPresentation("Password reset email sent successfully");
+    }
+
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByForgotPasswordToken(request.token())
+                .orElseThrow(() -> new ValidationException("Invalid or expired reset token"));
+
+        if (user.getForgotPasswordTokenExpiresAt() == null ||
+            LocalDateTime.now().isAfter(user.getForgotPasswordTokenExpiresAt()))
+            throw new ValidationException("Reset token has expired");
+
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setForgotPasswordToken(null);
+        user.setForgotPasswordTokenExpiresAt(null);
+
+        userRepository.save(user);
+
+        return resetPasswordResponse.toPresentation("Password has been reset successfully");
     }
 }

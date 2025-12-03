@@ -6,7 +6,6 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,23 @@ public class EmailService {
         configuration.getTemplate("feedback.ftlh").process(model, stringWriter);
         var body = stringWriter.getBuffer().toString();
         sendMailHtml(to, null, "Prezado " + name + ", novo Feedback adicionado em seu trabalho: " + workTitle, body);
+    }
+
+    public void sendPasswordResetEmail(String to, String name, String resetLink, String language) throws IOException, TemplateException, MessagingException {
+        StringWriter stringWriter = new StringWriter();
+        Map<String, Object> model = new HashMap<>();
+
+        model.put("name", name);
+        model.put("resetLink", resetLink);
+
+        String templateName = "pt".equalsIgnoreCase(language) ? "password-reset-pt.ftlh" : "password-reset-en.ftlh";
+        String subject = "pt".equalsIgnoreCase(language)
+            ? "Redefinição de Senha - DivulgaIF"
+            : "Password Reset - DivulgaIF";
+
+        configuration.getTemplate(templateName).process(model, stringWriter);
+        var body = stringWriter.getBuffer().toString();
+        sendMailHtml(to, null, subject, body);
     }
 
     public void sendMailHtml(String to, String cc, String subject, String body) throws MessagingException {
