@@ -108,6 +108,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<CustomException> illegalArgument(IllegalArgumentException e, HttpServletRequest request) {
+        var exception = CustomException.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .timestamp(Instant.now())
+                .error(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("IllegalArgumentException: {} - Path: {}", exception.getError(), exception.getPath());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     protected ResponseEntity<CustomException> invalidJsonFormat(HttpMessageNotReadableException e, HttpServletRequest request) {
         var exception = CustomException.builder()
