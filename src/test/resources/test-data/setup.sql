@@ -2,7 +2,7 @@ INSERT INTO roles (name, created_at) VALUES
  ('IS_STUDENT', CURRENT_TIMESTAMP),
  ('IS_TEACHER', CURRENT_TIMESTAMP),
  ('IS_ADMIN', CURRENT_TIMESTAMP)
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (name) WHERE deleted_at IS NULL DO NOTHING;
 
 INSERT INTO users (id, name, email, cpf, rg, ra, phone, password, bio, date_of_birth, avatar_url, email_confirmed_at, created_at, secondary_email, user_type) VALUES
   (1, 'Mateus Teste', 'mateusteste@teste.com', '202.108.850-25', null, null, null, '$2a$10$50IuCYfQIsWieK3IBZ1nauiEStJh639sJrkAdWBv18IIOYuYCEPZi', null, null, null, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, 'Aluno'),

@@ -1,0 +1,1 @@
+ALTER TABLE work_links ADD CONSTRAINT work_links_work_id_link_id_key UNIQUE (work_id, link_id);

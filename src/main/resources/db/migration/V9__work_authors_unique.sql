@@ -1,0 +1,1 @@
+ALTER TABLE work_authors ADD CONSTRAINT work_authors_work_id_author_id_key UNIQUE (work_id, author_id);
